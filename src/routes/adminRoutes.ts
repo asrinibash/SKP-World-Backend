@@ -17,6 +17,6 @@ adminRoutes.get("/", getAllAdminsController);
 adminRoutes.get("/:id", getAdminByIdController);
 adminRoutes.put("/:id", updateAdminController);
 adminRoutes.delete("/:id", deleteAdminByIdController);
-adminRoutes.delete("/", deleteAllAdminsController);
+// adminRoutes.delete("/", deleteAllAdminsController);   // for testing purposes
 
 export default adminRoutes;

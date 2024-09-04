@@ -85,7 +85,7 @@ export const deleteAdminByIdController = async (
   try {
     const { id } = req.params;
     await deleteAdminById(id);
-    res.status(204).send();
+    res.status(204).json({ message: "Admin deleted successfully", id: id });
   } catch (error) {
     next(error);
   }
@@ -98,7 +98,7 @@ export const deleteAllAdminsController = async (
 ) => {
   try {
     await deleteAllAdmins();
-    res.status(204).send();
+    res.status(204).send("All admins deleted successfully");
   } catch (error) {
     next(error);
   }
