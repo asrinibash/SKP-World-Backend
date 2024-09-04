@@ -1,42 +1,47 @@
 // admin-auth.business.logic.ts
 const { hashSync, compareSync } = require("bcrypt");
 import * as jwt from "jsonwebtoken";
-import { prismaClient } from "../index"; 
-import { JWT_SECRET } from "../secret"; 
+import { prismaClient } from "../index";
+import { JWT_SECRET } from "../secret";
 import { ErrorCode } from "../errorHandle/root";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
-import { Admin } from '.prisma/client'
+import { Admin } from ".prisma/client";
 
 // Admin Signup
 export const signupAdmin = async (data: {
   email: string;
   name: string;
   password: string;
-  image?: string; 
+  image?: string;
 }): Promise<Admin> => {
   const { email, name, password, image } = data;
 
-  // Check if the admin already exists
-  let admin = await prismaClient.admin.findFirst({ where: { email } });
-  if (admin) {
-    throw new BadRequestExpection(
-      "Admin already exists",
-      ErrorCode.USER_ALREADY_EXIST
-    );
+  try {
+    // Check if the admin already exists
+    let admin = await prismaClient.admin.findFirst({ where: { email } });
+    if (admin) {
+      throw new BadRequestExpection(
+        "Admin already exists",
+        ErrorCode.USER_ALREADY_EXIST
+      );
+    }
+
+    // Create a new admin with the provided details
+    admin = await prismaClient.admin.create({
+      data: {
+        name,
+        email,
+        password: hashSync(password, 10),
+        image,
+      },
+    });
+
+    return admin;
+  } catch (error) {
+    console.error("Error in signupAdmin:", error);
+    throw error;
   }
-
-  // Create a new admin with the provided details
-  admin = await prismaClient.admin.create({
-    data: {
-      name,
-      email,
-      password: hashSync(password, 10), 
-      image, 
-    },
-  });
-
-  return admin;
 };
 
 // Admin Login

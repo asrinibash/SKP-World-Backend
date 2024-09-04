@@ -21,6 +21,8 @@ model User {
   orders           Order[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+
+  @@map("users")
 }
 
 model Admin {
@@ -32,6 +34,8 @@ model Admin {
   groupsManaged Group[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@map("admin")
 }
 
 model Category {
@@ -42,6 +46,8 @@ model Category {
   courses     Course[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@map("category")
 }
 
 model Subscription {
@@ -54,6 +60,8 @@ model Subscription {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("subscription")
 }
 
 model Course {
@@ -70,6 +78,8 @@ model Course {
   orders           Order[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+
+  @@map("course")
 }
 
 model Order {
@@ -83,6 +93,8 @@ model Order {
   paymentMethod String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@map("order")
 }
 
 model Group {
@@ -94,6 +106,8 @@ model Group {
   createdById String      @db.ObjectId
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  @@map("group")
 }
 
 model UserGroup {
@@ -104,6 +118,7 @@ model UserGroup {
   groupId String @db.ObjectId
 
   @@unique([userId, groupId])
+  @@map("usergroup")
 }
 
 model PurchasedCourse {
@@ -114,4 +129,5 @@ model PurchasedCourse {
   courseId String @db.ObjectId
 
   @@unique([userId, courseId])
+  @@map("purchasedcourse")
 }
