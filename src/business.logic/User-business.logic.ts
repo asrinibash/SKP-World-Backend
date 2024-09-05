@@ -1,8 +1,8 @@
-const { hashSync, compareSync } = require("bcrypt"); // Import your Prisma client
-import { User } from "@prisma/client"; // Import User model from Prisma
+const { hashSync, compareSync } = require("bcrypt"); 
+import { User } from "@prisma/client"; 
 import { prismaClient } from "../index";
 import * as jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../secret"; // Replace with your actual secret key location
+import { JWT_SECRET } from "../secret"; 
 import { ErrorCode } from "../errorHandle/root";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
@@ -34,16 +34,15 @@ export const signupUser = async (data: {
       image,
       uploaded: false,
       purchasedCourses: {
-        create: [], // Properly initializing with nested create input type
+        create: [], 
       },
-      downloadHistory: null, // Can be set to null
+      downloadHistory: null, 
       userGroups: {
-        create: [], // Properly initializing with nested create input type
+        create: [], 
       },
       orders: {
-        create: [], // Properly initializing with nested create input type
+        create: [], 
       },
-      // Omit the subscription field
     },
   });
 
