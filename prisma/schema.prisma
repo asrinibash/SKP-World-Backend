@@ -35,19 +35,19 @@ model Admin {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  @@map("admin")
+  @@map("admins")
 }
 
 model Category {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
+  name        String   @unique
   description String
   image       String?
   courses     Course[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@map("category")
+  @@map("categories")
 }
 
 model Subscription {
@@ -61,7 +61,7 @@ model Subscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("subscription")
+  @@map("subscriptions")
 }
 
 model Course {
@@ -79,7 +79,7 @@ model Course {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
-  @@map("course")
+  @@map("courses")
 }
 
 model Order {
@@ -94,12 +94,12 @@ model Order {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  @@map("order")
+  @@map("orders")
 }
 
 model Group {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
+  name        String      @unique
   description String
   userGroups  UserGroup[]
   createdBy   Admin       @relation(fields: [createdById], references: [id])
@@ -107,7 +107,7 @@ model Group {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  @@map("group")
+  @@map("groups")
 }
 
 model UserGroup {
@@ -118,7 +118,7 @@ model UserGroup {
   groupId String @db.ObjectId
 
   @@unique([userId, groupId])
-  @@map("usergroup")
+  @@map("usergroups")
 }
 
 model PurchasedCourse {
@@ -129,5 +129,5 @@ model PurchasedCourse {
   courseId String @db.ObjectId
 
   @@unique([userId, courseId])
-  @@map("purchasedcourse")
+  @@map("purchasedcourses")
 }
