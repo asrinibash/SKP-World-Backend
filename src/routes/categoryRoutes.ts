@@ -7,14 +7,14 @@ import {
   updateCategoryController,
   deleteCategoryByIdController,
 } from "../controllers/category.controller";
-import { authenticateAdmin } from "../middleware/adminAuthMiddleware";
+import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 
 const router = Router();
 
-router.post("/create", authenticateAdmin, createCategoryController);
+router.post("/create", adminAuthMiddleware, createCategoryController);
 router.get("/", getAllCategoriesController);
 router.get("/:id", getCategoryByIdController);
-router.put("/:id", authenticateAdmin, updateCategoryController);
-router.delete("/:id", authenticateAdmin, deleteCategoryByIdController);
+router.put("/:id", adminAuthMiddleware, updateCategoryController);
+router.delete("/:id", adminAuthMiddleware, deleteCategoryByIdController);
 
 export default router;

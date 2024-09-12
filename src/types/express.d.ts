@@ -1,7 +1,8 @@
 import { Request } from "express";
 
-declare module "express" {
-  export interface Request {
-    adminId?: string; // Adding optional adminId to the Request type
+declare module "express-serve-static-core" {
+  interface Request {
+    adminId?: string;
+    userId?: string;
   }
 }

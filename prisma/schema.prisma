@@ -7,6 +7,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
 model User {
   id               String            @id @default(auto()) @map("_id") @db.ObjectId
   name             String
@@ -83,19 +90,20 @@ model Course {
 }
 
 model Order {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  user          User     @relation(fields: [userId], references: [id])
-  userId        String   @db.ObjectId
-  course        Course   @relation(fields: [courseId], references: [id])
-  courseId      String   @db.ObjectId
-  paymentStatus String
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String      @db.ObjectId
+  course        Course      @relation(fields: [courseId], references: [id])
+  courseId      String      @db.ObjectId
+  paymentStatus OrderStatus 
   amount        Float
   paymentMethod String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@map("orders")
 }
+
 
 model Group {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId

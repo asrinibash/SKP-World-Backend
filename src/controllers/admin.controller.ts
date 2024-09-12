@@ -7,7 +7,7 @@ import {
   updateAdmin,
   deleteAdminById,
   deleteAllAdmins,
-} from "../business.logic/admin-business.logic";
+} from "../business.logic/admin.business.logic";
 
 export const signupAdminController = async (
   req: Request,

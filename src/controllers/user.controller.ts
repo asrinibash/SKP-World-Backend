@@ -7,7 +7,7 @@ import {
   updateUser,
   deleteUserById,
   deleteAllUsers,
-} from "../business.logic/user-business.logic";
+} from "../business.logic/user.business.logic";
 
 // User Signup
 export const signupUserController = async (

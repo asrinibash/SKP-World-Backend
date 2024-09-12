@@ -7,7 +7,7 @@ import {
   updateAdminController,
   deleteAdminByIdController,
   deleteAllAdminsController,
-} from "../controllers/admin-controller";
+} from "../controllers/admin.controller";
 
 const adminRoutes = Router();
 
