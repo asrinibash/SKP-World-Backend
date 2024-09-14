@@ -6,7 +6,6 @@ import {
   updateCategory,
   deleteCategoryById,
 } from "../business.logic/category.business.logic";
-
 // Create Category
 export const createCategoryController = async (
   req: Request,
