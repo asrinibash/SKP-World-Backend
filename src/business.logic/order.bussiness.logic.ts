@@ -16,14 +16,19 @@ export const createOrder = async (data: {
   try {
     // Check if the user and course exist
     const user = await prismaClient.user.findUnique({ where: { id: userId } });
-    const course = await prismaClient.course.findUnique({ where: { id: courseId } });
+    const course = await prismaClient.course.findUnique({
+      where: { id: courseId },
+    });
 
     if (!user) {
       throw new NotFoundException("User not found", ErrorCode.USER_NOT_FOUND);
     }
 
     if (!course) {
-      throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
+      throw new NotFoundException(
+        "Course not found",
+        ErrorCode.COURSE_NOT_FOUND
+      );
     }
 
     // Create a new order
@@ -52,7 +57,10 @@ export const getUserOrders = async (userId: string): Promise<Order[]> => {
   });
 
   if (!orders.length) {
-    throw new NotFoundException("Orders not found for this user", ErrorCode.ORDERS_NOT_FOUND);
+    throw new NotFoundException(
+      "Orders not found for this user",
+      ErrorCode.ORDERS_NOT_FOUND
+    );
   }
 
   return orders;
@@ -89,4 +97,20 @@ export const updateOrderStatus = async (
   });
 
   return updatedOrder;
+};
+
+// Get All Orders
+export const getAllOrders = async (): Promise<Order[]> => {
+  const orders = await prismaClient.order.findMany({
+    include: {
+      user: true,
+      course: true,
+    },
+  });
+
+  if (!orders.length) {
+    throw new NotFoundException("No orders found", ErrorCode.ORDERS_NOT_FOUND);
+  }
+
+  return orders;
 };

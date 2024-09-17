@@ -4,6 +4,7 @@ import {
   getUserOrders,
   getOrderById,
   updateOrderStatus,
+  getAllOrders,
 } from "../business.logic/order.bussiness.logic";
 import { OrderStatus } from "@prisma/client";
 
@@ -15,7 +16,12 @@ export const createOrderController = async (
 ) => {
   try {
     const { userId, courseId, paymentMethod, amount } = req.body;
-    const order = await createOrder({ userId, courseId, paymentMethod, amount });
+    const order = await createOrder({
+      userId,
+      courseId,
+      paymentMethod,
+      amount,
+    });
     res.status(201).json(order);
   } catch (error) {
     next(error);
@@ -60,15 +66,29 @@ export const updateOrderStatusController = async (
 ) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { paymentStatus } = req.body;
 
     // Validate the status
-    if (!Object.values(OrderStatus).includes(status)) {
+    if (!Object.values(OrderStatus).includes(paymentStatus)) {
       return res.status(400).json({ message: "Invalid order status" });
     }
 
-    const updatedOrder = await updateOrderStatus(id, status);
+    const updatedOrder = await updateOrderStatus(id, paymentStatus);
     res.status(200).json(updatedOrder);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get All Orders Controller
+export const getAllOrdersController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const orders = await getAllOrders();
+    res.status(200).json(orders);
   } catch (error) {
     next(error);
   }

@@ -9,11 +9,27 @@ import { ErrorCode } from "../errorHandle/root";
 export const createGroup = async (data: {
   name: string;
   description: string;
-  createdById: string;
+  createdByEmail: string;
 }): Promise<Group> => {
-  const { name, description, createdById } = data;
+  const { name, description, createdByEmail } = data;
 
   try {
+    console.log("Admin Email being used:", createdByEmail); // Debug log
+
+    // Check if the admin exists
+    const admin = await prismaClient.admin.findUnique({
+      where: { email: createdByEmail },
+    });
+
+    console.log("Admin found:", admin); // Debug log
+
+    if (!admin) {
+      throw new NotFoundException(
+        "Admin not found",
+        ErrorCode.CATEGORY_ALREADY_EXIST // Ensure this code exists in your ErrorCode enum
+      );
+    }
+
     const existingGroup = await prismaClient.group.findFirst({
       where: { name },
     });
@@ -30,7 +46,7 @@ export const createGroup = async (data: {
       data: {
         name,
         description,
-        createdBy: { connect: { id: createdById } },
+        createdBy: { connect: { id: admin.id } }, // Use admin.id here
       },
     });
 

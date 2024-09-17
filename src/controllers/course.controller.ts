@@ -98,44 +98,56 @@ export const deleteCourseByIdController = async (
   }
 };
 
-// Update Course File
+// Update Course File Controller
 export const updateCourseFileController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    // Ensure the admin is authenticated
     const admin = req.adminId;
     if (!admin) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
+    // Get course ID from params and file from the request body
     const { id } = req.params;
     const { file } = req.body;
-    const course = await updateCourseFile(id, file);
-    res.status(200).json(course);
+
+    // Update the course file
+    const updatedCourse = await updateCourseFile(id, file);
+
+    // Respond with the updated course
+    res.status(200).json(updatedCourse);
   } catch (error) {
-    next(error);
+    next(error); // Pass error to error handling middleware
   }
 };
 
-// Update Course Tags
+// Update Course Tags Controller
 export const updateCourseTagsController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    // Ensure the admin is authenticated
     const admin = req.adminId;
     if (!admin) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
+    // Get course ID from params and tags from the request body
     const { id } = req.params;
     const { tags } = req.body;
-    const course = await updateCourseTags(id, tags);
-    res.status(200).json(course);
+
+    // Update the course tags
+    const updatedCourse = await updateCourseTags(id, tags);
+
+    // Respond with the updated course
+    res.status(200).json(updatedCourse);
   } catch (error) {
-    next(error);
+    next(error); // Pass error to error handling middleware
   }
 };

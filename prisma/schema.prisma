@@ -42,7 +42,7 @@ model Admin {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  @@map("admins")
+  @@map("admin")
 }
 
 model Category {
@@ -95,7 +95,7 @@ model Order {
   userId        String      @db.ObjectId
   course        Course      @relation(fields: [courseId], references: [id])
   courseId      String      @db.ObjectId
-  paymentStatus OrderStatus 
+  paymentStatus OrderStatus
   amount        Float
   paymentMethod String
   createdAt     DateTime    @default(now())
@@ -103,7 +103,6 @@ model Order {
 
   @@map("orders")
 }
-
 
 model Group {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId

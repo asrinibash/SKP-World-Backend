@@ -10,19 +10,22 @@ import {
   removeUserFromGroup,
 } from "../business.logic/group.bussiness.logic";
 
-// Create Group
 export const createGroupController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const admin = req.adminId; // Ensure admin is authenticated
-    if (!admin) {
+    const adminEmail = req.body.email; // Ensure admin is authenticated and has email in req
+
+    if (!adminEmail) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
-    const group = await createGroup({ ...req.body, createdById: admin });
+    const group = await createGroup({
+      ...req.body,
+      createdByEmail: adminEmail,
+    });
     res.status(201).json(group);
   } catch (error) {
     next(error);

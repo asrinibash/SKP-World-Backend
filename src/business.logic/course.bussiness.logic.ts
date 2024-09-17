@@ -4,7 +4,6 @@ import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { Course } from ".prisma/client";
 import { ErrorCode } from "../errorHandle/root";
 
-
 export const createCourse = async (data: {
   name: string;
   description: string;
@@ -16,6 +15,7 @@ export const createCourse = async (data: {
   const { name, description, price, tags, file, categoryId } = data;
 
   try {
+    // Check if the course with the same name already exists
     const existingCourse = await prismaClient.course.findFirst({
       where: { name },
     });
@@ -27,7 +27,19 @@ export const createCourse = async (data: {
       );
     }
 
-    // Create a new course with the provided details
+    // Validate if the provided categoryId exists in the Category collection
+    const categoryExists = await prismaClient.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!categoryExists) {
+      throw new BadRequestExpection(
+        "Invalid category ID. Category not found",
+        ErrorCode.CATEGORY_NOT_FOUND
+      );
+    }
+
+    // Create a new course with the validated details
     const course = await prismaClient.course.create({
       data: {
         name,
@@ -101,34 +113,38 @@ export const deleteCourseById = async (id: string): Promise<void> => {
   await prismaClient.course.delete({ where: { id } });
 };
 
-// Update Course File
+// Update Course File Service
 export const updateCourseFile = async (
   id: string,
   file: string
 ): Promise<Course> => {
+  // Find course by ID
   const course = await prismaClient.course.findUnique({ where: { id } });
 
   if (!course) {
     throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
   }
 
+  // Update the course file
   return await prismaClient.course.update({
     where: { id },
     data: { file },
   });
 };
 
-// Update Course Tags
+// Update Course Tags Service
 export const updateCourseTags = async (
   id: string,
   tags: string[]
 ): Promise<Course> => {
+  // Find course by ID
   const course = await prismaClient.course.findUnique({ where: { id } });
 
   if (!course) {
     throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
   }
 
+  // Update the course tags
   return await prismaClient.course.update({
     where: { id },
     data: { tags },
