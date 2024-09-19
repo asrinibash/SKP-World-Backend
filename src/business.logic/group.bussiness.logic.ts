@@ -1,24 +1,27 @@
 // src/business.logic/group.bussiness.logic.ts
-import { prismaClient } from "../index";
 import { NotFoundException } from "../errorHandle/NotFoundException";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { Group, User, UserGroup } from ".prisma/client";
 import { ErrorCode } from "../errorHandle/root";
 
 // Create Group
+import { PrismaClient } from "@prisma/client"; // Adjust the import as necessary
+
+const prismaClient = new PrismaClient();
+
 export const createGroup = async (data: {
   name: string;
   description: string;
-  createdByEmail: string;
+  createdById: string;
 }): Promise<Group> => {
-  const { name, description, createdByEmail } = data;
+  const { name, description, createdById } = data;
 
   try {
-    console.log("Admin Email being used:", createdByEmail); // Debug log
+    console.log("Admin ID being used:", createdById); // Debug log
 
     // Check if the admin exists
     const admin = await prismaClient.admin.findUnique({
-      where: { email: createdByEmail },
+      where: { id: createdById }, // Use ID to find the admin
     });
 
     console.log("Admin found:", admin); // Debug log

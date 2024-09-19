@@ -16,16 +16,17 @@ export const createGroupController = async (
   next: NextFunction
 ) => {
   try {
-    const adminEmail = req.body.email; // Ensure admin is authenticated and has email in req
+    const adminId = req.params.adminId; // Get admin ID from route parameters
 
-    if (!adminEmail) {
+    if (!adminId) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
     const group = await createGroup({
       ...req.body,
-      createdByEmail: adminEmail,
+      createdById: adminId,
     });
+
     res.status(201).json(group);
   } catch (error) {
     next(error);
@@ -101,29 +102,30 @@ export const deleteGroupByIdController = async (
   }
 };
 
-// Add User to Group
+// Add User to Group Controller
 export const addUserToGroupController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { userId, groupId } = req.body;
+    const { userId } = req.body;
+    const { groupId } = req.params;
     const userGroup = await addUserToGroup(userId, groupId);
     res.status(201).json(userGroup);
   } catch (error) {
     next(error);
   }
 };
-
-// Remove User from Group
+// Remove User from Group Controller
 export const removeUserFromGroupController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { userId, groupId } = req.body;
+    const { userId } = req.body;
+    const { groupId } = req.params;
     await removeUserFromGroup(userId, groupId);
     res.status(204).json({ message: "User removed from group successfully" });
   } catch (error) {

@@ -14,12 +14,12 @@ import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 const router = Router();
 
 // Routes
-router.post("/", adminAuthMiddleware, createGroupController);
+router.post("/:adminId", adminAuthMiddleware, createGroupController);
 router.get("/", getAllGroupsController);
 router.get("/:id", getGroupByIdController);
 router.put("/:id", adminAuthMiddleware, updateGroupController);
 router.delete("/:id", adminAuthMiddleware, deleteGroupByIdController);
-router.post("/addUser", addUserToGroupController);
-router.post("/removeUser", removeUserFromGroupController);
+router.post("/addUser/:groupId/users", addUserToGroupController);
+router.delete("/removeUser/:groupId/users", removeUserFromGroupController);
 
 export default router;

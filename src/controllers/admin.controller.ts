@@ -7,6 +7,7 @@ import {
   updateAdmin,
   deleteAdminById,
   deleteAllAdmins,
+  uploadAdminImage,
 } from "../business.logic/admin.business.logic";
 
 export const signupAdminController = async (
@@ -99,6 +100,31 @@ export const deleteAllAdminsController = async (
   try {
     await deleteAllAdmins();
     res.status(204).send("All admins deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadAdminImageController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const adminId = req.params.adminId;
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    console.log("Uploaded file:", req.file); // Log file details
+    console.log("Admin ID:", adminId); // Log admin ID
+
+    const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`;
+    console.log("Image URL:", imageUrl); // Log image URL
+
+    // Call business logic to update the admin
+    const admin = await uploadAdminImage(adminId, imageUrl);
+    res.status(200).json(admin);
   } catch (error) {
     next(error);
   }
