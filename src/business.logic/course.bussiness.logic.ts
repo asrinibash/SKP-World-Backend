@@ -58,13 +58,17 @@ export const createCourse = async (data: {
   }
 };
 
-// Get All Courses
 export const getAllCourses = async (): Promise<Course[]> => {
   return await prismaClient.course.findMany({
     include: {
       category: true,
       purchasedCourses: true,
       orders: true,
+    },
+    where: {
+      category: {
+        is: {}, // This ensures the category is not null by checking if it exists
+      },
     },
   });
 };
