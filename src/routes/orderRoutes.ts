@@ -15,6 +15,6 @@ router.post("/create", createOrderController);
 router.get("/user/:userId", getUserOrdersController);
 router.get("/:id", getOrderByIdController);
 router.put("/:id/status", adminAuthMiddleware, updateOrderStatusController);
-router.get("/", adminAuthMiddleware, getAllOrdersController); // New route to get all orders
+router.get("/getAll", adminAuthMiddleware, getAllOrdersController); // New route to get all orders
 
 export default router;

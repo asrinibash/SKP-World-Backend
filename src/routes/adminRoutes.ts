@@ -13,7 +13,7 @@ const adminRoutes = Router();
 
 adminRoutes.post("/signup", signupAdminController);
 adminRoutes.post("/login", loginAdminController);
-adminRoutes.get("/", getAllAdminsController);
+adminRoutes.get("/getAll", getAllAdminsController);
 adminRoutes.get("/:id", getAdminByIdController);
 adminRoutes.put("/:id", updateAdminController);
 adminRoutes.delete("/:id", deleteAdminByIdController);

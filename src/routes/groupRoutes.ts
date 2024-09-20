@@ -15,7 +15,7 @@ const router = Router();
 
 // Routes
 router.post("/", adminAuthMiddleware, createGroupController);
-router.get("/", getAllGroupsController);
+router.get("/getAll", getAllGroupsController);
 router.get("/:id", getGroupByIdController);
 router.put("/:id", adminAuthMiddleware, updateGroupController);
 router.delete("/:id", adminAuthMiddleware, deleteGroupByIdController);
