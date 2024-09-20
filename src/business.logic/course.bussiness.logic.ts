@@ -10,9 +10,9 @@ export const createCourse = async (data: {
   price: number;
   tags: string[];
   file: string;
-  categoryId: string;
+  categoryName: string;
 }): Promise<Course> => {
-  const { name, description, price, tags, file, categoryId } = data;
+  const { name, description, price, tags, file, categoryName } = data;
 
   try {
     // Check if the course with the same name already exists
@@ -27,14 +27,14 @@ export const createCourse = async (data: {
       );
     }
 
-    // Validate if the provided categoryId exists in the Category collection
+    // Validate if the provided category exists
     const categoryExists = await prismaClient.category.findUnique({
-      where: { id: categoryId },
+      where: { name: categoryName }, // Assuming categoryName is unique
     });
 
     if (!categoryExists) {
       throw new BadRequestExpection(
-        "Invalid category ID. Category not found",
+        "Invalid category. Category not found",
         ErrorCode.CATEGORY_NOT_FOUND
       );
     }
@@ -46,8 +46,10 @@ export const createCourse = async (data: {
         description,
         price,
         tags,
-        file,
-        categoryId,
+        file, // The uploaded file's name is stored
+        category: {
+          connect: { id: categoryExists.id }, // Connect to the existing category using its ID
+        },
       },
     });
 
