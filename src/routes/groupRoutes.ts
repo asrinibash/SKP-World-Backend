@@ -14,6 +14,9 @@ import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 const router = Router();
 
 // Routes
+router.post("/", adminAuthMiddleware, createGroupController);
+router.get("/getAll", getAllGroupsController);
+
 router.post("/:adminId", adminAuthMiddleware, createGroupController);
 router.get("/", getAllGroupsController);
 router.get("/:id", getGroupByIdController);

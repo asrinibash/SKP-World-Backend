@@ -10,16 +10,10 @@ import {
   updateCourseTagsController,
 } from "../controllers/course.controller";
 import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
-import upload from "../multer/upload";
 
 const router = Router();
 
-router.post(
-  "/create",
-  adminAuthMiddleware,
-  upload.single("file"),
-  createCourseController
-);
+router.post("/create", adminAuthMiddleware, createCourseController);
 router.get("/", getAllCoursesController);
 router.get("/:id", getCourseByIdController);
 router.put("/:id", adminAuthMiddleware, updateCourseController);
