@@ -114,3 +114,30 @@ export const deleteAdminById = async (id: string): Promise<void> => {
 export const deleteAllAdmins = async (): Promise<void> => {
   await prismaClient.admin.deleteMany();
 };
+
+export const uploadAdminImage = async (
+  adminId: string,
+  imageUrl: string
+): Promise<Admin> => {
+  // Use the Admin type instead of User
+  // Ensure the admin exists
+  let admin = await prismaClient.admin.findUnique({ where: { id: adminId } });
+
+  if (!admin) {
+    throw new NotFoundException(
+      "Admin not found",
+      ErrorCode.CATEGORY_ALREADY_EXIST
+    );
+  }
+
+  // Update the admin with the new image URL and set uploaded to true
+  admin = await prismaClient.admin.update({
+    where: { id: adminId },
+    data: {
+      image: imageUrl,
+      uploaded: true, // Ensure this field is defined in your Prisma schema
+    },
+  });
+
+  return admin;
+};

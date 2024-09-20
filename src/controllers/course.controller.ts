@@ -11,23 +11,38 @@ import {
 } from "../business.logic/course.bussiness.logic";
 
 // Create Course
-export const createCourseController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const admin = req.adminId; // Ensure admin is authenticated
-    if (!admin) {
-      return res.status(403).json({ message: "Unauthorized access" });
-    }
+import multer from "multer";
 
-    const course = await createCourse(req.body);
-    res.status(201).json(course);
-  } catch (error) {
-    next(error);
-  }
-};
+// Assuming you have configured multer
+const upload = multer({ dest: "uploads/" }); // or use diskStorage if needed
+
+export const createCourseController = [
+  upload.single("file"), // This will handle the file upload for 'file' field
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const admin = req.adminId; // Ensure admin is authenticated
+      if (!admin) {
+        return res.status(403).json({ message: "Unauthorized access" });
+      }
+
+      const { name, description, price, tags, categoryName } = req.body;
+      const file = req.file?.filename; // Handle the uploaded file
+
+      const course = await createCourse({
+        name,
+        description,
+        price: Number(price), // Ensure price is a number
+        tags: tags ? tags.split(",") : [], // Convert tags from string to array
+        file: file || "", // Pass the uploaded file
+        categoryName,
+      });
+
+      res.status(201).json(course);
+    } catch (error) {
+      next(error);
+    }
+  },
+];
 
 // Get All Courses
 export const getAllCoursesController = async (

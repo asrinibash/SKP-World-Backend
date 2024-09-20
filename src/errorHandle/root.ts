@@ -43,4 +43,7 @@ export enum ErrorCode {
   UPDATE_FAILED,
   INVALID_ID,
   FILE_TOO_LARGE,
+  DB_ERROR,
+  ADMIN_NOT_FOUND,
+  INVALID_ID_FORMAT,
 }

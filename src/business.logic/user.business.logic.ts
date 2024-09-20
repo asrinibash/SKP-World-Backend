@@ -1,8 +1,8 @@
-const { hashSync, compareSync } = require("bcrypt"); 
-import { User } from "@prisma/client"; 
+const { hashSync, compareSync } = require("bcrypt");
+import { User } from "@prisma/client";
 import { prismaClient } from "../index";
 import * as jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../secret"; 
+import { JWT_SECRET } from "../secret";
 import { ErrorCode } from "../errorHandle/root";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
@@ -34,14 +34,14 @@ export const signupUser = async (data: {
       image,
       uploaded: false,
       purchasedCourses: {
-        create: [], 
+        create: [],
       },
-      downloadHistory: null, 
+      downloadHistory: null,
       userGroups: {
-        create: [], 
+        create: [],
       },
       orders: {
-        create: [], 
+        create: [],
       },
     },
   });
@@ -118,4 +118,28 @@ export const deleteUserById = async (id: string): Promise<void> => {
 // Delete All Users
 export const deleteAllUsers = async (): Promise<void> => {
   await prismaClient.user.deleteMany();
+};
+
+// Upload Image
+export const uploadImage = async (
+  userId: string,
+  imageUrl: string
+): Promise<User> => {
+  // Ensure the user exists
+  let user = await prismaClient.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new NotFoundException("User not found", ErrorCode.USER_NOT_FOUND);
+  }
+
+  // Update the user with the new image URL and set uploaded to true
+  user = await prismaClient.user.update({
+    where: { id: userId },
+    data: {
+      image: imageUrl,
+      uploaded: true,
+    },
+  });
+
+  return user;
 };

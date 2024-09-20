@@ -7,6 +7,7 @@ import {
   updateUser,
   deleteUserById,
   deleteAllUsers,
+  uploadImage,
 } from "../business.logic/user.business.logic";
 
 // User Signup
@@ -106,6 +107,32 @@ export const deleteAllUsersController = async (
   try {
     await deleteAllUsers();
     res.status(204).send("All users deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Upload Image Controller
+export const uploadImageController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.userId;
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    console.log("Uploaded file:", req.file); // Log file details
+    console.log("User ID:", userId); // Log user ID
+
+    const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`;
+    console.log("Image URL:", imageUrl); // Log image URL
+
+    // Call business logic to update the user
+    const user = await uploadImage(userId, imageUrl);
+    res.status(200).json(user);
   } catch (error) {
     next(error);
   }

@@ -7,7 +7,9 @@ import {
   updateAdminController,
   deleteAdminByIdController,
   deleteAllAdminsController,
+  uploadAdminImageController,
 } from "../controllers/admin.controller";
+import upload from "../multer/multer.config";
 
 const adminRoutes = Router();
 
@@ -18,5 +20,10 @@ adminRoutes.get("/:id", getAdminByIdController);
 adminRoutes.put("/:id", updateAdminController);
 adminRoutes.delete("/:id", deleteAdminByIdController);
 // adminRoutes.delete("/", deleteAllAdminsController);   // for testing purposes
+adminRoutes.post(
+  "/:adminId/upload",
+  upload.single("image"),
+  uploadAdminImageController
+);
 
 export default adminRoutes;

@@ -43,7 +43,11 @@ export const createCategory = async (data: {
 
 // Get All Categories
 export const getAllCategories = async (): Promise<Category[]> => {
-  return await prismaClient.category.findMany();
+  return await prismaClient.category.findMany({
+    include: {
+      courses: true, // Fetch related courses for each category
+    },
+  });
 };
 
 // Get Category by ID
@@ -51,7 +55,10 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
   const category = await prismaClient.category.findUnique({ where: { id } });
 
   if (!category) {
-    throw new NotFoundException("Category not found", ErrorCode.CATEGORY_NOT_FOUND);
+    throw new NotFoundException(
+      "Category not found",
+      ErrorCode.CATEGORY_NOT_FOUND
+    );
   }
 
   return category;
@@ -65,7 +72,10 @@ export const updateCategory = async (
   let category = await prismaClient.category.findUnique({ where: { id } });
 
   if (!category) {
-    throw new NotFoundException("Category not found", ErrorCode.CATEGORY_NOT_FOUND);
+    throw new NotFoundException(
+      "Category not found",
+      ErrorCode.CATEGORY_NOT_FOUND
+    );
   }
 
   category = await prismaClient.category.update({
@@ -81,7 +91,10 @@ export const deleteCategoryById = async (id: string): Promise<void> => {
   const category = await prismaClient.category.findUnique({ where: { id } });
 
   if (!category) {
-    throw new NotFoundException("Category not found", ErrorCode.CATEGORY_NOT_FOUND);
+    throw new NotFoundException(
+      "Category not found",
+      ErrorCode.CATEGORY_NOT_FOUND
+    );
   }
 
   await prismaClient.category.delete({ where: { id } });

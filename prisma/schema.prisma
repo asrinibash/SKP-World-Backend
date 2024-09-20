@@ -33,11 +33,13 @@ model User {
 }
 
 model Admin {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  email         String   @unique
-  password      String
-  image         String?
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String  @unique
+  password String
+  image    String?
+  uploaded Boolean @default(false) // Ensure this field exists
+
   groupsManaged Group[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
