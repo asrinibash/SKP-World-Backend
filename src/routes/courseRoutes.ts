@@ -14,7 +14,7 @@ import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 const router = Router();
 
 router.post("/create", adminAuthMiddleware, createCourseController);
-router.get("/", getAllCoursesController);
+router.get("/getAll", getAllCoursesController);
 router.get("/:id", getCourseByIdController);
 router.put("/:id", adminAuthMiddleware, updateCourseController);
 router.delete("/:id", adminAuthMiddleware, deleteCourseByIdController);
