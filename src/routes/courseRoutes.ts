@@ -14,10 +14,6 @@ import upload from "../multer/upload";
 
 const router = Router();
 
-<<<<<<< HEAD
-router.post("/create", adminAuthMiddleware, createCourseController);
-router.get("/getAll", getAllCoursesController);
-=======
 router.post(
   "/create",
   adminAuthMiddleware,
@@ -25,7 +21,6 @@ router.post(
   createCourseController
 );
 router.get("/", getAllCoursesController);
->>>>>>> 197b59822f02f8e5d670aabfdcf432b08a644c7a
 router.get("/:id", getCourseByIdController);
 router.put("/:id", adminAuthMiddleware, updateCourseController);
 router.delete("/:id", adminAuthMiddleware, deleteCourseByIdController);
