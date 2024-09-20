@@ -12,7 +12,7 @@ import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 const router = Router();
 
 router.post("/create", adminAuthMiddleware, createCategoryController);
-router.get("/", getAllCategoriesController);
+router.get("/getAll", getAllCategoriesController);
 router.get("/:id", getCategoryByIdController);
 router.put("/:id", adminAuthMiddleware, updateCategoryController);
 router.delete("/:id", adminAuthMiddleware, deleteCategoryByIdController);

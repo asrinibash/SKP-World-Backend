@@ -13,8 +13,22 @@ import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 
 const router = Router();
 
+<<<<<<< HEAD
 router.post("/create", adminAuthMiddleware, createCourseController);
+=======
+<<<<<<< HEAD
+router.post("/create", adminAuthMiddleware, createCourseController);
+router.get("/getAll", getAllCoursesController);
+=======
+router.post(
+  "/create",
+  adminAuthMiddleware,
+  upload.single("file"),
+  createCourseController
+);
+>>>>>>> 621b976afcef510dabe451b99b6a6c87cecb1193
 router.get("/", getAllCoursesController);
+>>>>>>> 197b59822f02f8e5d670aabfdcf432b08a644c7a
 router.get("/:id", getCourseByIdController);
 router.put("/:id", adminAuthMiddleware, updateCourseController);
 router.delete("/:id", adminAuthMiddleware, deleteCourseByIdController);
