@@ -18,6 +18,7 @@ const router = Router();
 // router.get("/getAll", getAllGroupsController);
 
 router.post("/:adminId", createGroupController);
+// router.post("/:adminId", adminAuthMiddleware, createGroupController);
 router.get("/getAll", getAllGroupsController);
 router.get("/:id", getGroupByIdController);
 router.put("/:id", adminAuthMiddleware, updateGroupController);
