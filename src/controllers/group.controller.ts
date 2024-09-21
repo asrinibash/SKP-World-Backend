@@ -16,15 +16,16 @@ export const createGroupController = async (
   next: NextFunction
 ) => {
   try {
-    const adminId = req.params.adminId; // Get admin ID from route parameters
+    const adminId = req.adminId; // Retrieve adminId from the request context
 
     if (!adminId) {
-      return res.status(403).json({ message: "Unauthorized access" });
+      return res.status(400).json({ error: "Admin ID is required." });
     }
 
     const group = await createGroup({
-      ...req.body,
-      createdById: adminId,
+      name: req.body.name,
+      description: req.body.description,
+      adminId, // Pass adminId to the createGroup function
     });
 
     res.status(201).json(group);
@@ -102,21 +103,22 @@ export const deleteGroupByIdController = async (
   }
 };
 
-// Add User to Group Controller
 export const addUserToGroupController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { userId } = req.body;
-    const { groupId } = req.params;
-    const userGroup = await addUserToGroup(userId, groupId);
+    const { name } = req.body; // Make sure the body contains 'name'
+    const { groupId } = req.params; // Group ID from the route parameter
+
+    const userGroup = await addUserToGroup(name, groupId); // Pass name and groupId
     res.status(201).json(userGroup);
   } catch (error) {
     next(error);
   }
 };
+
 // Remove User from Group Controller
 export const removeUserFromGroupController = async (
   req: Request,

@@ -12,27 +12,12 @@ const prismaClient = new PrismaClient();
 export const createGroup = async (data: {
   name: string;
   description: string;
-  createdById: string;
+  adminId: string; // Add adminId to the input data type
 }): Promise<Group> => {
-  const { name, description, createdById } = data;
+  const { name, description, adminId } = data; // Destructure adminId
 
   try {
-    console.log("Admin ID being used:", createdById); // Debug log
-
-    // Check if the admin exists
-    const admin = await prismaClient.admin.findUnique({
-      where: { id: createdById }, // Use ID to find the admin
-    });
-
-    console.log("Admin found:", admin); // Debug log
-
-    if (!admin) {
-      throw new NotFoundException(
-        "Admin not found",
-        ErrorCode.CATEGORY_ALREADY_EXIST // Ensure this code exists in your ErrorCode enum
-      );
-    }
-
+    // Check if the group already exists
     const existingGroup = await prismaClient.group.findFirst({
       where: { name },
     });
@@ -49,7 +34,7 @@ export const createGroup = async (data: {
       data: {
         name,
         description,
-        createdBy: { connect: { id: admin.id } }, // Use admin.id here
+        createdBy: { connect: { id: adminId } }, // Include adminId here
       },
     });
 
@@ -115,13 +100,38 @@ export const deleteGroupById = async (id: string): Promise<void> => {
 
 // Add User to Group
 export const addUserToGroup = async (
-  userId: string,
+  name: string,
   groupId: string
 ): Promise<UserGroup> => {
   try {
+    // Find the user by name using findFirst, since name is not unique
+    const user = await prismaClient.user.findFirst({
+      where: { name },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if the user is already in the group
+    const existingUserGroup = await prismaClient.userGroup.findUnique({
+      where: {
+        userId_groupId: {
+          userId: user.id,
+          groupId: groupId,
+        },
+      },
+    });
+
+    // If the user is already in the group, throw an error
+    if (existingUserGroup) {
+      throw new Error("User is already part of this group.");
+    }
+
+    // Connect the user to the group using user.id
     const userGroup = await prismaClient.userGroup.create({
       data: {
-        user: { connect: { id: userId } },
+        user: { connect: { id: user.id } },
         group: { connect: { id: groupId } },
       },
     });
