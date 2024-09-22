@@ -3,10 +3,11 @@ const { hashSync, compareSync } = require("bcrypt");
 import * as jwt from "jsonwebtoken";
 import { prismaClient } from "../index";
 import { JWT_SECRET } from "../secret";
-import { ErrorCode } from "../errorHandle/root";
-import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
-import { NotFoundException } from "../errorHandle/NotFoundException";
+
 import { Admin } from ".prisma/client";
+import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
+import { ErrorCode } from "../errorHandle/root";
+import { NotFoundException } from "../errorHandle/NotFoundException";
 
 // Admin Signup
 export const signupAdmin = async (data: {
