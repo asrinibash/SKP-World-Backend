@@ -8,6 +8,7 @@ import {
   deleteGroupByIdController,
   addUserToGroupController,
   removeUserFromGroupController,
+  getUsersByGroupIdController,
 } from "../controllers/group.controller";
 import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 
@@ -24,6 +25,10 @@ router.get("/:id", getGroupByIdController);
 router.put("/:id", adminAuthMiddleware, updateGroupController);
 router.delete("/:id", adminAuthMiddleware, deleteGroupByIdController);
 router.post("/addUser/:groupId/users", addUserToGroupController);
-router.delete("/removeUser/:groupId/users", removeUserFromGroupController);
+router.get("/getAllGroupUser/:groupId", getUsersByGroupIdController);
+router.delete(
+  "/removeUser/:groupId/users/:userId",
+  removeUserFromGroupController
+);
 
 export default router;
