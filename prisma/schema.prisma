@@ -39,6 +39,7 @@ model Admin {
   password String
   image    String?
   uploaded Boolean @default(false) // Ensure this field exists
+  role     String
 
   groupsManaged Group[]
   createdAt     DateTime @default(now())

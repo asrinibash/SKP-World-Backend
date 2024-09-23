@@ -15,8 +15,9 @@ export const signupAdmin = async (data: {
   name: string;
   password: string;
   image?: string;
+  role?: string;
 }): Promise<Admin> => {
-  const { email, name, password, image } = data;
+  const { email, name, password, image, role } = data;
 
   try {
     // Check if the admin already exists
@@ -28,13 +29,14 @@ export const signupAdmin = async (data: {
       );
     }
 
-    // Create a new admin with the provided details
+    // Create a new admin with default role 'admin' if not provided
     admin = await prismaClient.admin.create({
       data: {
         name,
         email,
         password: hashSync(password, 10),
         image,
+        role: role || "admin", // Set default role to 'admin' if not provided
       },
     });
 
