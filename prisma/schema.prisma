@@ -22,9 +22,11 @@ model User {
   image            String?
   uploaded         Boolean           @default(false)
   purchasedCourses PurchasedCourse[]
-  subscription     Subscription?
   downloadHistory  Json?
   userGroups       UserGroup[]
+  subscription     Subscription?
+  isSubscribed     Boolean           @default(false)
+  subscriptionEnd  DateTime?
   orders           Order[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
@@ -64,9 +66,10 @@ model Subscription {
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique @db.ObjectId
   type      String
+  amount    Float
+  isActive  Boolean  @default(false)
   startDate DateTime
   endDate   DateTime
-  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
