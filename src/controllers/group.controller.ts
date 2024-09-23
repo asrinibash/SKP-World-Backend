@@ -8,6 +8,7 @@ import {
   deleteGroupById,
   addUserToGroup,
   removeUserFromGroup,
+  getUsersByGroupId,
 } from "../business.logic/group.bussiness.logic";
 
 export const createGroupController = async (
@@ -16,7 +17,7 @@ export const createGroupController = async (
   next: NextFunction
 ) => {
   try {
-    const adminId = req.adminId; // Retrieve adminId from the request context
+    const { adminId } = req.params; // Retrieve adminId from the request params
 
     if (!adminId) {
       return res.status(400).json({ error: "Admin ID is required." });
@@ -103,19 +104,37 @@ export const deleteGroupByIdController = async (
   }
 };
 
+// Controller for adding user to group
 export const addUserToGroupController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { name } = req.body; // Make sure the body contains 'name'
+    const { name } = req.body; // Ensure 'name' exists in the request body
     const { groupId } = req.params; // Group ID from the route parameter
 
     const userGroup = await addUserToGroup(name, groupId); // Pass name and groupId
     res.status(201).json(userGroup);
+  } catch (error: any) {
+    if (error.name === "UserAlreadyInGroup") {
+      return res.status(409).json({ message: error.message });
+    }
+    next(error); // For other errors, pass to the error handler middleware
+  }
+};
+
+export const getUsersByGroupIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { groupId } = req.params; // Get groupId from request parameters
+    const users = await getUsersByGroupId(groupId); // Fetch users for the group
+    res.status(200).json(users); // Return the list of users
   } catch (error) {
-    next(error);
+    next(error); // Handle errors in middleware
   }
 };
 
@@ -126,7 +145,7 @@ export const removeUserFromGroupController = async (
   next: NextFunction
 ) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.params;
     const { groupId } = req.params;
     await removeUserFromGroup(userId, groupId);
     res.status(204).json({ message: "User removed from group successfully" });

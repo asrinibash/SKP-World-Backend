@@ -1,8 +1,8 @@
 import { prismaClient } from "../index";
-import { NotFoundException } from "../errorHandle/NotFoundException";
-import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { Category } from ".prisma/client";
 import { ErrorCode } from "../errorHandle/root";
+import { NotFoundException } from "../errorHandle/NotFoundException";
+import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 
 // Create Category
 export const createCategory = async (data: {

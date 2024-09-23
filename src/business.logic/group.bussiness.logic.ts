@@ -123,9 +123,11 @@ export const addUserToGroup = async (
       },
     });
 
-    // If the user is already in the group, throw an error
+    // If the user is already in the group, throw a specific error
     if (existingUserGroup) {
-      throw new Error("User is already part of this group.");
+      const error = new Error("User is already part of this group.");
+      error.name = "UserAlreadyInGroup"; // Custom error name
+      throw error.message;
     }
 
     // Connect the user to the group using user.id
@@ -139,6 +141,27 @@ export const addUserToGroup = async (
     return userGroup;
   } catch (error) {
     console.error("Error in addUserToGroup:", error);
+    throw error;
+  }
+};
+
+export const getUsersByGroupId = async (groupId: string): Promise<User[]> => {
+  try {
+    // Find all users in the group using groupId
+    const usersInGroup = await prismaClient.userGroup.findMany({
+      where: {
+        groupId: groupId,
+      },
+      include: {
+        user: true, // Include the related user details
+      },
+    });
+
+    // Extract user details from the userGroup relations
+    const users = usersInGroup.map((userGroup) => userGroup.user);
+    return users;
+  } catch (error) {
+    console.error("Error in getUsersByGroupId:", error);
     throw error;
   }
 };

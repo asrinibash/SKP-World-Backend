@@ -3,10 +3,11 @@ const { hashSync, compareSync } = require("bcrypt");
 import * as jwt from "jsonwebtoken";
 import { prismaClient } from "../index";
 import { JWT_SECRET } from "../secret";
-import { ErrorCode } from "../errorHandle/root";
-import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
-import { NotFoundException } from "../errorHandle/NotFoundException";
+
 import { Admin } from ".prisma/client";
+import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
+import { ErrorCode } from "../errorHandle/root";
+import { NotFoundException } from "../errorHandle/NotFoundException";
 
 // Admin Signup
 export const signupAdmin = async (data: {
@@ -14,8 +15,9 @@ export const signupAdmin = async (data: {
   name: string;
   password: string;
   image?: string;
+  role?: string;
 }): Promise<Admin> => {
-  const { email, name, password, image } = data;
+  const { email, name, password, image, role } = data;
 
   try {
     // Check if the admin already exists
@@ -27,13 +29,14 @@ export const signupAdmin = async (data: {
       );
     }
 
-    // Create a new admin with the provided details
+    // Create a new admin with default role 'admin' if not provided
     admin = await prismaClient.admin.create({
       data: {
         name,
         email,
         password: hashSync(password, 10),
         image,
+        role: role || "admin", // Set default role to 'admin' if not provided
       },
     });
 

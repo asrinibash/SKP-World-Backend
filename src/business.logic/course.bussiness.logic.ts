@@ -1,8 +1,8 @@
-import { prismaClient } from "../index";
-import { NotFoundException } from "../errorHandle/NotFoundException";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
-import { Course } from ".prisma/client";
+import { NotFoundException } from "../errorHandle/NotFoundException";
 import { ErrorCode } from "../errorHandle/root";
+import { prismaClient } from "../index";
+import { Course } from ".prisma/client";
 
 export const createCourse = async (data: {
   name: string;
@@ -10,9 +10,9 @@ export const createCourse = async (data: {
   price: number;
   tags: string[];
   file: string;
-  categoryId: string;
+  categoryName: string; // Changed from categoryId to categoryName
 }): Promise<Course> => {
-  const { name, description, price, tags, file, categoryId } = data;
+  const { name, description, price, tags, file, categoryName } = data;
 
   try {
     // Check if the course with the same name already exists
@@ -27,14 +27,14 @@ export const createCourse = async (data: {
       );
     }
 
-    // Validate if the provided categoryId exists in the Category collection
+    // Validate if the provided categoryName exists in the Category collection
     const categoryExists = await prismaClient.category.findUnique({
-      where: { id: categoryId },
+      where: { name: categoryName }, // Searching by name instead of id
     });
 
     if (!categoryExists) {
       throw new BadRequestExpection(
-        "Invalid category ID. Category not found",
+        "Invalid category name. Category not found",
         ErrorCode.CATEGORY_NOT_FOUND
       );
     }
@@ -47,7 +47,7 @@ export const createCourse = async (data: {
         price,
         tags,
         file,
-        categoryId,
+        categoryId: categoryExists.id, // Use the ID of the found category
       },
     });
 
