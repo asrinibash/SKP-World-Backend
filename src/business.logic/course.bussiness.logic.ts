@@ -4,13 +4,15 @@ import { ErrorCode } from "../errorHandle/root";
 import { prismaClient } from "../index";
 import { Course } from ".prisma/client";
 
+// courseService.ts
+
 export const createCourse = async (data: {
   name: string;
   description: string;
   price: number;
   tags: string[];
-  file: string;
-  categoryName: string; // Changed from categoryId to categoryName
+  file: string[]; // Array of file paths
+  categoryName: string;
 }): Promise<Course> => {
   const { name, description, price, tags, file, categoryName } = data;
 
@@ -29,7 +31,7 @@ export const createCourse = async (data: {
 
     // Validate if the provided categoryName exists in the Category collection
     const categoryExists = await prismaClient.category.findUnique({
-      where: { name: categoryName }, // Searching by name instead of id
+      where: { name: categoryName },
     });
 
     if (!categoryExists) {
@@ -46,7 +48,7 @@ export const createCourse = async (data: {
         description,
         price,
         tags,
-        file,
+        file, // Store the array of file paths
         categoryId: categoryExists.id, // Use the ID of the found category
       },
     });
@@ -67,7 +69,7 @@ export const getAllCourses = async (): Promise<Course[]> => {
     },
     where: {
       category: {
-        is: {}, // This ensures the category is not null by checking if it exists
+        is: {},
       },
     },
   });
@@ -118,9 +120,10 @@ export const deleteCourseById = async (id: string): Promise<void> => {
 };
 
 // Update Course File Service
+// Update Course File Service
 export const updateCourseFile = async (
   id: string,
-  file: string
+  files: string[] // This should accept an array of strings
 ): Promise<Course> => {
   // Find course by ID
   const course = await prismaClient.course.findUnique({ where: { id } });
@@ -129,10 +132,10 @@ export const updateCourseFile = async (
     throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
   }
 
-  // Update the course file
+  // Update the course file with the array of file paths
   return await prismaClient.course.update({
     where: { id },
-    data: { file },
+    data: { file: files }, // Pass the files array directly
   });
 };
 

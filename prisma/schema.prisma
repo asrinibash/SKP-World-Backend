@@ -83,7 +83,7 @@ model Course {
   description      String
   price            Float
   tags             String[]
-  file             String
+  file             String[]
   downloads        Int               @default(0)
   category         Category          @relation(fields: [categoryId], references: [id])
   categoryId       String            @db.ObjectId

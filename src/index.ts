@@ -14,7 +14,7 @@ const upload = multer({ dest: "uploads/" }); // Adjust the destination folder as
 app.use(
   cors({
     origin: "*", // Your frontend URL
-    methods: "GET, POST, PUT, OPTIONS, DELETE",
+    methods: "GET, POST,PATCH, PUT, OPTIONS, DELETE",
     allowedHeaders: "Authorization, Content-Type",
   })
 );

@@ -9,24 +9,79 @@ import {
   updateCourseFile,
   updateCourseTags,
 } from "../business.logic/course.bussiness.logic";
+import upload from "../multer/multer.config";
+import { prismaClient } from "..";
+import { uploadFiles } from "../multer/upload";
 
-// Create Course
+// Create Course Controller
+
+// Use multer to handle file uploads for the route
+const uploadFile = upload.single("file");
+
 export const createCourseController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const admin = req.adminId; // Ensure admin is authenticated
-    if (!admin) {
-      return res.status(403).json({ message: "Unauthorized access" });
+  uploadFiles(req, res, async (err) => {
+    if (err) {
+      console.error("Multer error:", err); // Log the multer error
+      return res.status(400).json({ message: err.message });
     }
 
-    const course = await createCourse(req.body);
-    res.status(201).json(course);
-  } catch (error) {
-    next(error);
-  }
+    // Log uploaded files and request body for debugging
+    console.log("Uploaded files:", req.files);
+    console.log("Request body:", req.body);
+
+    // Extract only the expected fields from req.body
+    const { name, description, price, tags, categoryName } = req.body;
+
+    // Check for any unexpected fields
+    const unexpectedFields = Object.keys(req.body).filter(
+      (key) =>
+        !["name", "description", "price", "tags", "categoryName"].includes(key)
+    );
+
+    if (unexpectedFields.length > 0) {
+      return res.status(400).json({
+        message: "Unexpected fields present in the request",
+        unexpectedFields: unexpectedFields, // Return the unexpected fields
+      });
+    }
+
+    try {
+      // Check if the admin is authenticated
+      const admin = req.adminId;
+      if (!admin) {
+        return res.status(403).json({ message: "Unauthorized access" });
+      }
+
+      // Ensure files are uploaded
+      const files = req.files as Express.Multer.File[]; // Typecast to get the file array
+      const filePaths = files.map((file) => file.path); // Extract file paths
+
+      // Ensure files were uploaded
+      if (!filePaths.length) {
+        return res.status(400).json({ message: "File upload failed" });
+      }
+
+      // Prepare course data
+      const courseData = {
+        name,
+        description,
+        price: parseFloat(price), // Ensure price is a number
+        tags: tags.split(","), // Convert tags to an array
+        file: filePaths, // Pass the array of file paths
+        categoryName, // Ensure categoryName is received
+      };
+
+      // Create the course using the service function
+      const course = await createCourse(courseData);
+      res.status(201).json(course);
+    } catch (error) {
+      next(error); // Pass errors to the error handler
+    }
+  });
 };
 
 // Get All Courses
@@ -99,24 +154,25 @@ export const deleteCourseByIdController = async (
 };
 
 // Update Course File Controller
+// Update Course File Controller
 export const updateCourseFileController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    // Ensure the admin is authenticated
-    const admin = req.adminId;
-    if (!admin) {
-      return res.status(403).json({ message: "Unauthorized access" });
+    const { id } = req.params;
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
     }
 
-    // Get course ID from params and file from the request body
-    const { id } = req.params;
-    const { file } = req.body;
+    // Extract file paths to save in the database
+    const filePaths = files.map((file) => file.path);
 
-    // Update the course file
-    const updatedCourse = await updateCourseFile(id, file);
+    // Pass the entire filePaths array to the update function
+    const updatedCourse = await updateCourseFile(id, filePaths);
 
     // Respond with the updated course
     res.status(200).json(updatedCourse);

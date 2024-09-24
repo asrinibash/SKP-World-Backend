@@ -10,6 +10,7 @@ import {
   updateCourseTagsController,
 } from "../controllers/course.controller";
 import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
+import upload from "../multer/multer.config";
 
 const router = Router();
 
@@ -18,7 +19,7 @@ router.get("/getAll", getAllCoursesController);
 router.get("/:id", getCourseByIdController);
 router.put("/:id", adminAuthMiddleware, updateCourseController);
 router.delete("/:id", adminAuthMiddleware, deleteCourseByIdController);
-router.patch("/:id/file", adminAuthMiddleware, updateCourseFileController);
+router.patch("/:id/file", upload.array("files"), updateCourseFileController);
 router.patch("/:id/tags", adminAuthMiddleware, updateCourseTagsController);
 
 export default router;

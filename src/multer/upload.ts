@@ -11,9 +11,12 @@ const storage = multer.diskStorage({
   },
 });
 
-// Create the multer upload instance
+// Create the multer upload instance for multiple files
 const upload = multer({
   storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // Limit file size to 5 MB
+  },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
       "application/pdf",
@@ -26,10 +29,10 @@ const upload = multer({
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true); // No error, proceed with file upload
     } else {
-      // Pass null for the error, and false to indicate rejection of the file
-      cb(new Error("Unsupported file type")); // This should be changed
+      cb(new Error("Unsupported file type"));
     }
   },
 });
 
-export default upload;
+// Export the upload instance for multiple files (10 files limit)
+export const uploadFiles = upload.array("files", 10); // Adjust the field name to "files" and limit to 10
