@@ -10,9 +10,11 @@ import {
   getUserByIdController,
   updateUserController,
   deleteUserByIdController,
-  deleteAllUsersController,
   uploadImageController,
+  getUsersByStatusController,
+  updateUserStatusController,
 } from "../controllers/user.controller";
+import { updateUserStatusById } from "../business.logic/user.business.logic";
 
 const router = express.Router();
 const upload = multer(); // Configure Multer as needed
@@ -29,5 +31,11 @@ router.post(
   multerUpload.single("image"),
   uploadImageController
 );
+
+// Route for updating user status
+router.put("/:id/status", updateUserStatusController);
+
+// Route for getting users by status
+router.get("/status/:status", getUsersByStatusController);
 
 export default router;

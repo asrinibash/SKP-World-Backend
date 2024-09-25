@@ -43,7 +43,7 @@ export const getUserOrdersController = async (
   }
 };
 
-// Get Order by ID
+// Get Order by ID Controller
 export const getOrderByIdController = async (
   req: Request,
   res: Response,
@@ -52,6 +52,11 @@ export const getOrderByIdController = async (
   try {
     const { id } = req.params;
     const order = await getOrderById(id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
     res.status(200).json(order);
   } catch (error) {
     next(error);

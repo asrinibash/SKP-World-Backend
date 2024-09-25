@@ -70,7 +70,10 @@ export const getUserOrders = async (userId: string): Promise<Order[]> => {
 export const getOrderById = async (id: string): Promise<Order | null> => {
   const order = await prismaClient.order.findUnique({
     where: { id },
-    include: { user: true, course: true },
+    include: {
+      user: true, // Include user details
+      course: true, // Include course details
+    },
   });
 
   if (!order) {

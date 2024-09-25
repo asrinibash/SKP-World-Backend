@@ -18,6 +18,8 @@ export const createCategory = async (data: {
       where: { name },
     });
 
+    console.log("Existing Category:", existingCategory); // Log existing category for debugging
+
     if (existingCategory) {
       throw new BadRequestExpection(
         "Category already exists",
@@ -40,7 +42,6 @@ export const createCategory = async (data: {
     throw error;
   }
 };
-
 // Get All Categories
 export const getAllCategories = async (): Promise<Category[]> => {
   return await prismaClient.category.findMany({

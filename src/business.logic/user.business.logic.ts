@@ -1,11 +1,12 @@
 const { hashSync, compareSync } = require("bcrypt");
 import { User } from "@prisma/client";
-import { prismaClient } from "../index";
 import * as jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../secret";
 import { ErrorCode } from "../errorHandle/root";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
+import { prismaClient } from "..";
+import { UserStatus } from "@prisma/client";
 
 // User Signup
 export const signupUser = async (data: {
@@ -61,6 +62,14 @@ export const loginUser = async (email: string, password: string) => {
     throw new BadRequestExpection(
       "Incorrect password",
       ErrorCode.INCORRECT_PASSWORD
+    );
+  }
+
+  // Check if user status is active
+  if (user.userStatus !== "ACTIVE") {
+    throw new BadRequestExpection(
+      `Cannot log in. Your account is currently ${user.userStatus}.`,
+      ErrorCode.UNKNOWN_ERROR
     );
   }
 
@@ -142,4 +151,27 @@ export const uploadImage = async (
   });
 
   return user;
+};
+
+// userService.ts
+
+export const updateUserStatusById = async (
+  userId: string,
+  status: UserStatus
+) => {
+  try {
+    const updatedUser = await prismaClient.user.update({
+      where: { id: userId },
+      data: { userStatus: status },
+    });
+    return updatedUser;
+  } catch (error: any) {
+    throw new Error(`Could not update user status: ${error.message}`);
+  }
+};
+
+// Get Users by Status
+// Get Users by Status
+export const getUsersByStatus = async (status: string): Promise<User[]> => {
+  return await prismaClient.user.findMany({ where: { status } });
 };
