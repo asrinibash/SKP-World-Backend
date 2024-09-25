@@ -98,8 +98,32 @@ export const updateUser = async (
 };
 
 // Get All Users
+// Get All Users with Orders
 export const getAllUsers = async (): Promise<User[]> => {
-  return await prismaClient.user.findMany();
+  return await prismaClient.user.findMany({
+    include: {
+      orders: {
+        // Include orders associated with each user
+        include: {
+          course: true, // Include course details if needed
+        },
+      },
+    },
+  });
+};
+
+// Get All Users with Orders
+export const getAllUser = async (): Promise<User[]> => {
+  return await prismaClient.user.findMany({
+    include: {
+      orders: {
+        // Include orders associated with each user
+        include: {
+          course: true, // Include course details if needed
+        },
+      },
+    },
+  });
 };
 
 // Get User by ID
@@ -175,3 +199,17 @@ export const updateUserStatusById = async (
 export const getUsersByStatus = async (status: string): Promise<User[]> => {
   return await prismaClient.user.findMany({ where: { status } });
 };
+
+// Get All Users with Orders
+// export const getAllUserss = async (): Promise<User[]> => {
+//   return await prismaClient.user.findMany({
+//     include: {
+//       orders: {
+//         // Include orders associated with each user
+//         include: {
+//           course: true, // Include course details if needed
+//         },
+//       },
+//     },
+//   });
+// };

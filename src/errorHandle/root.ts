@@ -46,4 +46,5 @@ export enum ErrorCode {
   DB_ERROR,
   ADMIN_NOT_FOUND,
   INVALID_ID_FORMAT,
+  USER_STATUS_NOT_ACTIVE,
 }

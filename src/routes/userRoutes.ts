@@ -13,6 +13,8 @@ import {
   uploadImageController,
   getUsersByStatusController,
   updateUserStatusController,
+  getAllUsersControllers,
+  // getAllUsersControllers,
 } from "../controllers/user.controller";
 import { updateUserStatusById } from "../business.logic/user.business.logic";
 
@@ -22,6 +24,7 @@ const upload = multer(); // Configure Multer as needed
 router.post("/signup", signupUserController);
 router.post("/login", loginUserController);
 router.get("/getAll", getAllUsersController);
+router.get("/getAlls", getAllUsersControllers);
 router.get("/:id", getUserByIdController);
 router.put("/:id", updateUserController);
 router.delete("/:id", deleteUserByIdController);
@@ -37,5 +40,7 @@ router.put("/:id/status", updateUserStatusController);
 
 // Route for getting users by status
 router.get("/status/:status", getUsersByStatusController);
+
+// router.get("/getAll", getAllUsersControllers); // New route to get all orders by name
 
 export default router;

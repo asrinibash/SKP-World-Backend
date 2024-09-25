@@ -10,6 +10,8 @@ import {
   uploadImage,
   getUsersByStatus,
   updateUserStatusById,
+  getAllUser,
+  // getAllUserss,
 } from "../business.logic/user.business.logic";
 import { prismaClient } from "..";
 import { UserStatus } from "@prisma/client";
@@ -43,7 +45,7 @@ export const loginUserController = async (
   }
 };
 
-// Get All Users
+// Get All Users Controller
 export const getAllUsersController = async (
   req: Request,
   res: Response,
@@ -51,9 +53,22 @@ export const getAllUsersController = async (
 ) => {
   try {
     const users = await getAllUsers();
-    res.status(200).json(users);
+    res.status(200).json(users); // Send users with orders in the response
   } catch (error) {
-    next(error);
+    next(error); // Pass errors to the error handler middleware
+  }
+};
+
+export const getAllUsersControllers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const users = await getAllUser();
+    res.status(200).json(users); // Send users with orders in the response
+  } catch (error) {
+    next(error); // Pass errors to the error handler middleware
   }
 };
 
@@ -196,3 +211,17 @@ export const getUsersByStatusController = async (
     next(error);
   }
 };
+
+// Get All Users Controller
+// export const getAllUsersControllers = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const users = await getAllUserss();
+//     res.status(200).json(users); // Send users with orders in the response
+//   } catch (error) {
+//     next(error); // Pass errors to the error handler middleware
+//   }
+// };

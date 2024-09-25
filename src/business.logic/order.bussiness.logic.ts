@@ -1,7 +1,7 @@
 import { prismaClient } from "../index";
 import { NotFoundException } from "../errorHandle/NotFoundException";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
-import { Order, OrderStatus } from "@prisma/client";
+import { Order, OrderStatus, User } from "@prisma/client";
 import { ErrorCode } from "../errorHandle/root";
 
 // Create Order
@@ -106,8 +106,8 @@ export const updateOrderStatus = async (
 export const getAllOrders = async (): Promise<Order[]> => {
   const orders = await prismaClient.order.findMany({
     include: {
-      user: true,
-      course: true,
+      user: true, // Assuming there's a user relation
+      course: true, // Assuming there's a course relation
     },
   });
 

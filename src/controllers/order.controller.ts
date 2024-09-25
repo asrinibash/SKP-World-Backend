@@ -7,6 +7,7 @@ import {
   getAllOrders,
 } from "../business.logic/order.bussiness.logic";
 import { OrderStatus } from "@prisma/client";
+import { prismaClient } from "..";
 
 // Create Order
 export const createOrderController = async (
@@ -62,6 +63,8 @@ export const getOrderByIdController = async (
     next(error);
   }
 };
+
+// Fetch orders by user name
 
 // Update Order Status
 export const updateOrderStatusController = async (
