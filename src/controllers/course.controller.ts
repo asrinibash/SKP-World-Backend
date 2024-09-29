@@ -1,4 +1,3 @@
-// src/controllers/course.controller.ts
 import { Request, Response, NextFunction } from "express";
 import {
   createCourse,
@@ -8,10 +7,15 @@ import {
   deleteCourseById,
   updateCourseFile,
   updateCourseTags,
+  getCourseFile,
+  downloadCoursePDFs,
+  uploadCourseFiles,
 } from "../business.logic/course.bussiness.logic";
 import upload from "../multer/multer.config";
-import { prismaClient } from "..";
-import { uploadFiles } from "../multer/upload";
+import { PrismaClient } from "@prisma/client";
+import { AuthRequest } from '../types/AuthRequest'; 
+import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
+import { NotFoundException } from "../errorHandle/NotFoundException";
 
 // Create Course Controller
 
@@ -23,15 +27,12 @@ export const createCourseController = async (
   res: Response,
   next: NextFunction
 ) => {
-  uploadFiles(req, res, async (err) => {
-    if (err) {
-      console.error("Multer error:", err); // Log the multer error
-      return res.status(400).json({ message: err.message });
+  try {
+    // Check if the admin is authenticated
+    const admin = req.adminId;
+    if (!admin) {
+      return res.status(403).json({ message: "Unauthorized access" });
     }
-
-    // Log uploaded files and request body for debugging
-    console.log("Uploaded files:", req.files);
-    console.log("Request body:", req.body);
 
     // Extract only the expected fields from req.body
     const { name, description, price, tags, categoryName } = req.body;
@@ -45,43 +46,35 @@ export const createCourseController = async (
     if (unexpectedFields.length > 0) {
       return res.status(400).json({
         message: "Unexpected fields present in the request",
-        unexpectedFields: unexpectedFields, // Return the unexpected fields
+        unexpectedFields: unexpectedFields,
       });
     }
 
-    try {
-      // Check if the admin is authenticated
-      const admin = req.adminId;
-      if (!admin) {
-        return res.status(403).json({ message: "Unauthorized access" });
-      }
-
-      // Ensure files are uploaded
-      const files = req.files as Express.Multer.File[]; // Typecast to get the file array
-      const filePaths = files.map((file) => file.path); // Extract file paths
-
-      // Ensure files were uploaded
-      if (!filePaths.length) {
-        return res.status(400).json({ message: "File upload failed" });
-      }
-
-      // Prepare course data
-      const courseData = {
-        name,
-        description,
-        price: parseFloat(price), // Ensure price is a number
-        tags: tags.split(","), // Convert tags to an array
-        file: filePaths, // Pass the array of file paths
-        categoryName, // Ensure categoryName is received
-      };
-
-      // Create the course using the service function
-      const course = await createCourse(courseData);
-      res.status(201).json(course);
-    } catch (error) {
-      next(error); // Pass errors to the error handler
+    // Ensure files are uploaded
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
     }
-  });
+
+    // Upload files to S3 and get their URLs
+    const fileUrls = await uploadCourseFiles(files);
+
+    // Prepare course data
+    const courseData = {
+      name,
+      description,
+      price: parseFloat(price),
+      tags: tags.split(","),
+      file: fileUrls,
+      categoryName,
+    };
+
+    // Create the course using the service function
+    const course = await createCourse(courseData);
+    res.status(201).json(course);
+  } catch (error) {
+    next(error);
+  }
 };
 
 // Get All Courses
@@ -162,22 +155,11 @@ export const updateCourseFileController = async (
 ) => {
   try {
     const { id } = req.params;
-    const files = req.files as Express.Multer.File[];
-
-    if (!files || files.length === 0) {
-      return res.status(400).json({ message: "No files uploaded" });
-    }
-
-    // Extract file paths to save in the database
-    const filePaths = files.map((file) => file.path);
-
-    // Pass the entire filePaths array to the update function
-    const updatedCourse = await updateCourseFile(id, filePaths);
-
-    // Respond with the updated course
+    const fileUrls = await uploadCourseFiles(req.files as Express.Multer.File[]);
+    const updatedCourse = await updateCourseFile(id, fileUrls);
     res.status(200).json(updatedCourse);
   } catch (error) {
-    next(error); // Pass error to error handling middleware
+    next(error);
   }
 };
 
@@ -205,5 +187,41 @@ export const updateCourseTagsController = async (
     res.status(200).json(updatedCourse);
   } catch (error) {
     next(error); // Pass error to error handling middleware
+  }
+};
+
+// Add this new controller for getting course file
+export const getCourseFileController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const signedUrls = await getCourseFile(id);
+    res.status(200).json({ downloadUrls: signedUrls });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Download Course PDFs
+
+export const downloadCoursePDFsController = async (req: AuthRequest, res: Response) => {
+  try {
+    const courseId = req.params.id;
+    const userId = req.user.id; // Assuming AuthRequest adds user info
+
+    const archive = await downloadCoursePDFs(courseId, userId);
+    
+    res.attachment(`course_${courseId}_pdfs.zip`);
+    archive.pipe(res);
+    await archive.finalize();
+  } catch (error) {
+    console.error("Error downloading course PDFs:", error);
+    if (error instanceof BadRequestExpection || error instanceof NotFoundException) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Error downloading course PDFs" });
   }
 };
