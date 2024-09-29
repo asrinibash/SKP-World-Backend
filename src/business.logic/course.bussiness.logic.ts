@@ -4,8 +4,8 @@ import { ErrorCode } from "../errorHandle/root";
 import { prismaClient } from "../index";
 import { Course } from ".prisma/client";
 import { uploadFile as s3UploadFile, getSignedDownloadUrl } from "../utils/s3";
-import archiver from 'archiver';
-import { Readable } from 'stream';
+import archiver from "archiver";
+import { Readable } from "stream";
 
 // courseService.ts
 
@@ -170,37 +170,41 @@ export const getCourseFile = async (id: string): Promise<string[]> => {
   }
 
   // Assuming the course.file is an array of S3 keys
-  return await Promise.all(
-    course.file.map((key) => getSignedDownloadUrl(key))
-  );
+  return await Promise.all(course.file.map((key) => getSignedDownloadUrl(key)));
 };
 
 // New function for downloading course PDFs
-export const downloadCoursePDFs = async (courseId: string, userId: string): Promise<archiver.Archiver> => {
+export const downloadCoursePDFs = async (
+  courseId: string,
+  userId: string
+): Promise<archiver.Archiver> => {
   const purchase = await prismaClient.purchase.findFirst({
-    where: { 
+    where: {
       userId: userId,
-      courseId: courseId
-    }
+      courseId: courseId,
+    },
   });
 
   if (!purchase) {
-    throw new BadRequestExpection("Access denied. Course not purchased.", ErrorCode.UNAUTHORIZED);
+    throw new BadRequestExpection(
+      "Access denied. Course not purchased.",
+      ErrorCode.UNAUTHORIZED
+    );
   }
 
-  const course = await prismaClient.course.findUnique({ 
+  const course = await prismaClient.course.findUnique({
     where: { id: courseId },
-    select: { pdfKeys: true }
+    select: { pdfKeys: true },
   });
 
   if (!course) {
     throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
   }
 
-  const archive = archiver('zip');
+  const archive = archiver("zip");
 
   for (const pdfKey of course.pdfKeys) {
-    const pdfName = pdfKey.split('/').pop();
+    const pdfName = pdfKey.split("/").pop();
     const signedUrl = await getSignedDownloadUrl(pdfKey);
     const response = await fetch(signedUrl);
     const pdfStream = response.body;
@@ -213,7 +217,9 @@ export const downloadCoursePDFs = async (courseId: string, userId: string): Prom
 };
 
 // New function for uploading course files
-export const uploadCourseFiles = async (files: Express.Multer.File[]): Promise<string[]> => {
+export const uploadCourseFiles = async (
+  files: Express.Multer.File[]
+): Promise<string[]> => {
   if (!files || files.length === 0) {
     throw new BadRequestExpection("No files uploaded", ErrorCode.BAD_REQUEST);
   }

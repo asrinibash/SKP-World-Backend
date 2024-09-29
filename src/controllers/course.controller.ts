@@ -13,14 +13,13 @@ import {
 } from "../business.logic/course.bussiness.logic";
 import upload from "../multer/multer.config";
 import { PrismaClient } from "@prisma/client";
-import { AuthRequest } from '../types/AuthRequest'; 
+import { AuthRequest } from "../types/AuthRequest";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
 
 // Create Course Controller
 
 // Use multer to handle file uploads for the route
-const uploadFile = upload.single("file");
 
 export const createCourseController = async (
   req: Request,
@@ -155,7 +154,9 @@ export const updateCourseFileController = async (
 ) => {
   try {
     const { id } = req.params;
-    const fileUrls = await uploadCourseFiles(req.files as Express.Multer.File[]);
+    const fileUrls = await uploadCourseFiles(
+      req.files as Express.Multer.File[]
+    );
     const updatedCourse = await updateCourseFile(id, fileUrls);
     res.status(200).json(updatedCourse);
   } catch (error) {
@@ -207,19 +208,25 @@ export const getCourseFileController = async (
 
 // Download Course PDFs
 
-export const downloadCoursePDFsController = async (req: AuthRequest, res: Response) => {
+export const downloadCoursePDFsController = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
     const courseId = req.params.id;
     const userId = req.user.id; // Assuming AuthRequest adds user info
 
     const archive = await downloadCoursePDFs(courseId, userId);
-    
+
     res.attachment(`course_${courseId}_pdfs.zip`);
     archive.pipe(res);
     await archive.finalize();
   } catch (error) {
     console.error("Error downloading course PDFs:", error);
-    if (error instanceof BadRequestExpection || error instanceof NotFoundException) {
+    if (
+      error instanceof BadRequestExpection ||
+      error instanceof NotFoundException
+    ) {
       return res.status(error.statusCode).json({ message: error.message });
     }
     res.status(500).json({ message: "Error downloading course PDFs" });
