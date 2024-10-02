@@ -67,7 +67,7 @@ export const getAllCourses = async (): Promise<Course[]> => {
   return await prismaClient.course.findMany({
     include: {
       category: true,
-      purchasedCourses: true,
+      purchases: true, // Changed from purchasedCourses to purchases
       orders: true,
     },
     where: {
