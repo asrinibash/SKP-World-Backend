@@ -13,7 +13,7 @@ import {
 } from "../business.logic/course.bussiness.logic";
 import upload from "../multer/multer.config";
 import { PrismaClient } from "@prisma/client";
-import { AuthRequest } from '../types/AuthRequest'; 
+import { AuthRequest } from "../types/AuthRequest";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
 import { UnauthorizedException } from "../errorHandle/UnauthorizedException";
@@ -22,7 +22,6 @@ import { ErrorCode } from "../errorHandle/root";
 // Create Course Controller
 
 // Use multer to handle file uploads for the route
-const uploadFile = upload.single("file");
 
 export const createCourseController = async (
   req: Request,
@@ -157,7 +156,9 @@ export const updateCourseFileController = async (
 ) => {
   try {
     const { id } = req.params;
-    const fileUrls = await uploadCourseFiles(req.files as Express.Multer.File[]);
+    const fileUrls = await uploadCourseFiles(
+      req.files as Express.Multer.File[]
+    );
     const updatedCourse = await updateCourseFile(id, fileUrls);
     res.status(200).json(updatedCourse);
   } catch (error) {
@@ -209,7 +210,7 @@ export const getCourseFileController = async (
 
 // Download Course PDFs
 
-export const downloadCoursePDFsController = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const downloadCoursePDFsController = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) {
       throw new UnauthorizedException("User not authenticated", ErrorCode.UNAUTHORIZED);
@@ -219,11 +220,15 @@ export const downloadCoursePDFsController = async (req: AuthRequest, res: Respon
     const userId = req.user.id;
 
     const archive = await downloadCoursePDFs(courseId, userId);
-    
+
     res.attachment(`course_${courseId}_pdfs.zip`);
     archive.pipe(res);
     await archive.finalize();
   } catch (error) {
-    next(error);
+    console.error("Error downloading course PDFs:", error);
+    if (error instanceof BadRequestExpection || error instanceof NotFoundException) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Error downloading course PDFs" });
   }
 };

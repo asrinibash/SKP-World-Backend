@@ -20,37 +20,17 @@ const router = Router();
 
 // Public routes
 router.get("/getAll", getAllCoursesController);
-router.get("/:courseId", getCourseByIdController);
+router.get("/:id", getCourseByIdController);
 
 // User authenticated and purchase-checked routes
-router.get(
-  "/:courseId/file",
-  userAuthMiddleware,
-  purchaseCheckMiddleware,
-  getCourseFileController
-);
-router.get(
-  "/:courseId/download-pdfs",
-  userAuthMiddleware,
-  purchaseCheckMiddleware,
-  downloadCoursePDFsController
-);
+router.get("/:id/file", userAuthMiddleware, purchaseCheckMiddleware, getCourseFileController);
+router.get("/:id/download-pdfs", userAuthMiddleware, purchaseCheckMiddleware, downloadCoursePDFsController);
 
 // Admin authenticated routes
-router.post(
-  "/create",
-  adminAuthMiddleware,
-  upload.array("files"),
-  createCourseController
-);
-router.put("/:courseId", adminAuthMiddleware, updateCourseController);
-router.delete("/:courseId", adminAuthMiddleware, deleteCourseByIdController);
-router.patch(
-  "/:courseId/file",
-  adminAuthMiddleware,
-  upload.array("files"),
-  updateCourseFileController
-);
-router.patch("/:courseId/tags", adminAuthMiddleware, updateCourseTagsController);
+router.post("/create", adminAuthMiddleware, upload.array("files"), createCourseController);
+router.put("/:id", adminAuthMiddleware, updateCourseController);
+router.delete("/:id", adminAuthMiddleware, deleteCourseByIdController);
+router.patch("/:id/file", adminAuthMiddleware, upload.array("files"), updateCourseFileController);
+router.patch("/:id/tags", adminAuthMiddleware, updateCourseTagsController);
 
 export default router;
