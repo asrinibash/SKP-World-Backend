@@ -16,6 +16,8 @@ import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from '../types/AuthRequest'; 
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
+import { UnauthorizedException } from "../errorHandle/UnauthorizedException";
+import { ErrorCode } from "../errorHandle/root";
 
 // Create Course Controller
 
@@ -207,10 +209,14 @@ export const getCourseFileController = async (
 
 // Download Course PDFs
 
-export const downloadCoursePDFsController = async (req: AuthRequest, res: Response) => {
+export const downloadCoursePDFsController = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      throw new UnauthorizedException("User not authenticated", ErrorCode.UNAUTHORIZED);
+    }
+
     const courseId = req.params.id;
-    const userId = req.user.id; // Assuming AuthRequest adds user info
+    const userId = req.user.id;
 
     const archive = await downloadCoursePDFs(courseId, userId);
     
@@ -218,10 +224,6 @@ export const downloadCoursePDFsController = async (req: AuthRequest, res: Respon
     archive.pipe(res);
     await archive.finalize();
   } catch (error) {
-    console.error("Error downloading course PDFs:", error);
-    if (error instanceof BadRequestExpection || error instanceof NotFoundException) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
-    res.status(500).json({ message: "Error downloading course PDFs" });
+    next(error);
   }
 };

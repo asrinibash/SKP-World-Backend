@@ -7,6 +7,7 @@ import categoryRoutes from "./categoryRoutes";
 import courseRoutes from "./courseRoutes";
 import groupRoutes from "./groupRoutes";
 import orderRoutes from "./orderRoutes";
+import paymentRoutes from "./paymentRoutes";
 
 // * Admin Routes
 rootRouter.use("/admin", adminRoutes);
@@ -22,6 +23,9 @@ rootRouter.use("/course", courseRoutes);
 
 // *Order Routes
 rootRouter.use("/order", orderRoutes);
+
+// *Order Routes
+rootRouter.use("/payment", paymentRoutes);
 
 // * Group Routes
 rootRouter.use("/group", groupRoutes);
