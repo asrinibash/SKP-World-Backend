@@ -78,7 +78,6 @@ export const createCourseController = async (
   }
 };
 
-// Get All Courses
 export const getAllCoursesController = async (
   req: Request,
   res: Response,
@@ -210,10 +209,16 @@ export const getCourseFileController = async (
 
 // Download Course PDFs
 
-export const downloadCoursePDFsController = async (req: AuthRequest, res: Response) => {
+export const downloadCoursePDFsController = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
     if (!req.user) {
-      throw new UnauthorizedException("User not authenticated", ErrorCode.UNAUTHORIZED);
+      throw new UnauthorizedException(
+        "User not authenticated",
+        ErrorCode.UNAUTHORIZED
+      );
     }
 
     const courseId = req.params.id;
@@ -226,7 +231,10 @@ export const downloadCoursePDFsController = async (req: AuthRequest, res: Respon
     await archive.finalize();
   } catch (error) {
     console.error("Error downloading course PDFs:", error);
-    if (error instanceof BadRequestExpection || error instanceof NotFoundException) {
+    if (
+      error instanceof BadRequestExpection ||
+      error instanceof NotFoundException
+    ) {
       return res.status(error.statusCode).json({ message: error.message });
     }
     res.status(500).json({ message: "Error downloading course PDFs" });
