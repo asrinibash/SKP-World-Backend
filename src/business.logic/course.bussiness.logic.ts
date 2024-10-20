@@ -87,19 +87,22 @@ export const getCourseById = async (id: string): Promise<Course | null> => {
   return course;
 };
 
-// Update Course
+// Update Course Service
 export const updateCourse = async (
-  id: string,
+  courseId: string, // Ensure this matches the parameter name used in the controller
   data: Partial<Course>
 ): Promise<Course> => {
-  let course = await prismaClient.course.findUnique({ where: { id } });
+  let course = await prismaClient.course.findUnique({
+    where: { id: courseId },
+  }); // Ensure you are using courseId
 
   if (!course) {
     throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
   }
 
+  // Update the course with the provided data
   course = await prismaClient.course.update({
-    where: { id },
+    where: { id: courseId }, // Ensure this uses courseId
     data,
   });
 
@@ -118,13 +121,14 @@ export const deleteCourseById = async (id: string): Promise<void> => {
 };
 
 // Update Course File Service
-// Update Course File Service
 export const updateCourseFile = async (
-  id: string,
+  courseId: string, // Match this parameter name
   files: string[] // This should accept an array of strings
 ): Promise<Course> => {
   // Find course by ID
-  const course = await prismaClient.course.findUnique({ where: { id } });
+  const course = await prismaClient.course.findUnique({
+    where: { id: courseId },
+  }); // Ensure you are using courseId
 
   if (!course) {
     throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
@@ -132,7 +136,7 @@ export const updateCourseFile = async (
 
   // Update the course file with the array of file paths
   return await prismaClient.course.update({
-    where: { id },
+    where: { id: courseId }, // Make sure this is courseId
     data: { file: files }, // Pass the files array directly
   });
 };

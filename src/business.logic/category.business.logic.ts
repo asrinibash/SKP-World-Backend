@@ -53,7 +53,12 @@ export const getAllCategories = async (): Promise<Category[]> => {
 
 // Get Category by ID
 export const getCategoryById = async (id: string): Promise<Category | null> => {
-  const category = await prismaClient.category.findUnique({ where: { id } });
+  const category = await prismaClient.category.findUnique({
+    where: { id },
+    include: {
+      courses: true, // Fetch related courses for each category
+    },
+  });
 
   if (!category) {
     throw new NotFoundException(

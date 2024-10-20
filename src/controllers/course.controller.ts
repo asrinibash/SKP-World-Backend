@@ -107,6 +107,7 @@ export const getCourseByIdController = async (
 };
 
 // Update Course
+// Update Course Controller
 export const updateCourseController = async (
   req: Request,
   res: Response,
@@ -118,8 +119,9 @@ export const updateCourseController = async (
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
-    const { id } = req.params;
-    const course = await updateCourse(id, req.body);
+    // Change 'id' to 'courseId' to match the route parameter
+    const { courseId } = req.params; // Use courseId here
+    const course = await updateCourse(courseId, req.body); // Pass courseId instead of id
     res.status(200).json(course);
   } catch (error) {
     next(error);
@@ -154,17 +156,20 @@ export const updateCourseFileController = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    // Use courseId instead of id to match your route
+    const { courseId } = req.params; // Get the courseId from params
     const fileUrls = await uploadCourseFiles(
-      req.files as Express.Multer.File[]
+      req.files as Express.Multer.File[] // This should match the files being uploaded
     );
-    const updatedCourse = await updateCourseFile(id, fileUrls);
+
+    const updatedCourse = await updateCourseFile(courseId, fileUrls); // Pass courseId
     res.status(200).json(updatedCourse);
   } catch (error) {
     next(error);
   }
 };
 
+// Update Course Tags Controller
 // Update Course Tags Controller
 export const updateCourseTagsController = async (
   req: Request,
@@ -179,11 +184,16 @@ export const updateCourseTagsController = async (
     }
 
     // Get course ID from params and tags from the request body
-    const { id } = req.params;
+    const { courseId } = req.params; // Changed from `id` to `courseId`
     const { tags } = req.body;
 
+    // Validate if `courseId` is present
+    if (!courseId) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+
     // Update the course tags
-    const updatedCourse = await updateCourseTags(id, tags);
+    const updatedCourse = await updateCourseTags(courseId, tags);
 
     // Respond with the updated course
     res.status(200).json(updatedCourse);

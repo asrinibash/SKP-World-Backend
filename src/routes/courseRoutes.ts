@@ -20,7 +20,7 @@ const router = Router();
 
 // Public routes
 router.get("/getAll", getAllCoursesController);
-router.get("/:courseId", getCourseByIdController);
+router.get("/:id", getCourseByIdController);
 
 // User authenticated and purchase-checked routes
 router.get(
@@ -51,6 +51,10 @@ router.patch(
   upload.array("files"),
   updateCourseFileController
 );
-router.patch("/:courseId/tags", adminAuthMiddleware, updateCourseTagsController);
+router.patch(
+  "/:courseId/tags",
+  adminAuthMiddleware,
+  updateCourseTagsController
+);
 
 export default router;
