@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 import { prismaClient } from "../index";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { ErrorCode } from "../errorHandle/root";
@@ -12,12 +12,18 @@ const base = "https://api-m.sandbox.paypal.com";
 // Generate an access token
 const generateAccessToken = async () => {
   try {
-    const auth = Buffer.from(PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET).toString("base64");
-    const response = await axios.post(`${base}/v1/oauth2/token`, "grant_type=client_credentials", {
-      headers: {
-        Authorization: `Basic ${auth}`,
-      },
-    });
+    const auth = Buffer.from(
+      PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET 
+    ).toString("base64");
+    const response = await axios.post(
+      `${base}/v1/oauth2/token`,
+      "grant_type=client_credentials",
+      {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      }
+    );
     return response.data.access_token;
   } catch (error) {
     console.error("Failed to generate Access Token:", error);
@@ -26,11 +32,19 @@ const generateAccessToken = async () => {
 };
 
 // Create PayPal order
-export const createPayPalOrder = async (courseId: string, userId: string): Promise<{ id: string }> => {
+export const createPayPalOrder = async (
+  courseId: string,
+  userId: string
+): Promise< any > => {
   try {
-    const course = await prismaClient.course.findUnique({ where: { id: courseId } });
+    const course = await prismaClient.course.findUnique({
+      where: { id: courseId },
+    });
     if (!course) {
-      throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
+      throw new NotFoundException(
+        "Course not found",
+        ErrorCode.COURSE_NOT_FOUND
+      );
     }
 
     const accessToken = await generateAccessToken();
@@ -65,10 +79,14 @@ export const createPayPalOrder = async (courseId: string, userId: string): Promi
       },
     });
 
-    return { id: response.data.id };
+   
+    return { id: response.data.id, response:response};
   } catch (error) {
     console.error("Failed to create PayPal order:", error);
-    throw new BadRequestExpection("Failed to create PayPal order", ErrorCode.PAYMENT_FAILED);
+    throw new BadRequestExpection(
+      "Failed to create PayPal order",
+      ErrorCode.PAYMENT_FAILED
+    );
   }
 };
 
@@ -78,12 +96,16 @@ export const capturePayPalPayment = async (orderId: string): Promise<Order> => {
     const accessToken = await generateAccessToken();
     const url = `${base}/v2/checkout/orders/${orderId}/capture`;
 
-    await axios.post(url, {}, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    await axios.post(
+      url,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
     // Update the order status in the database
     const updatedOrder = await prismaClient.order.update({
@@ -109,7 +131,10 @@ export const capturePayPalPayment = async (orderId: string): Promise<Order> => {
     return updatedOrder;
   } catch (error) {
     console.error("Failed to capture PayPal payment:", error);
-    throw new BadRequestExpection("Failed to capture PayPal payment", ErrorCode.PAYMENT_FAILED);
+    throw new BadRequestExpection(
+      "Failed to capture PayPal payment",
+      ErrorCode.PAYMENT_FAILED
+    );
   }
 };
 
