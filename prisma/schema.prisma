@@ -13,6 +13,7 @@ enum OrderStatus {
   CANCELLED
   FAILED
 }
+
 enum ReportType {
   USER
   COURSE
@@ -20,14 +21,16 @@ enum ReportType {
   SUBSCRIPTION
   OTHER
 }
+
 enum ReportStatus {
   PENDING
   COMPLETED
   FAILED
 }
+
 enum UserType {
-   ADMIN
-   USER
+  ADMIN
+  USER
 }
 
 enum UserStatus {
@@ -37,23 +40,25 @@ enum UserStatus {
 }
 
 model User {
-  id               String            @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  email            String            @unique
-  password         String
-  image            String?
-  uploaded         Boolean           @default(false)
-  purchases        Purchase[]
-  downloadHistory  Json?
-  userGroups       UserGroup[]
-  subscription     Subscription?
-  isSubscribed     Boolean           @default(false)
-  subscriptionEnd  DateTime?
-  orders           Order[]
-  userStatus       UserStatus        @default(PENDING) // User's status
-  status           OrderStatus       @default(PENDING) // Order status
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  email           String        @unique
+  password        String
+  image           String?
+  uploaded        Boolean       @default(false)
+  purchases       Purchase[]
+  downloadHistory Json?
+  userGroups      UserGroup[]
+  subscription    Subscription?
+  isSubscribed    Boolean       @default(false)
+  subscriptionEnd DateTime?
+  orders          Order[]
+  userType        UserType
+  userStatus      UserStatus    @default(PENDING) // User's status
+  status          OrderStatus   @default(PENDING) // Order status
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  Report          Report[]
 
   @@map("users")
 }
@@ -105,12 +110,12 @@ model Course {
   id            String     @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   description   String
-  originalPrice Float      
-  discount      Float?     
-  finalPrice    Float      
+  originalPrice Float
+  discount      Float?
+  finalPrice    Float
   tags          String[]
   file          String[]
-  imageFiles    String[]   
+  imageFiles    String[]
   downloads     Int        @default(0)
   category      Category   @relation(fields: [categoryId], references: [id])
   categoryId    String     @db.ObjectId
@@ -121,7 +126,6 @@ model Course {
 
   @@map("courses")
 }
-
 
 model Order {
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
@@ -176,14 +180,15 @@ model Purchase {
 }
 
 model Report {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  title        String      
-  description  String?   
-  reportType   ReportType 
-  status       ReportStatus
-  generatedBy  UserType    @relation(fields: [generatedById], references: [id])
-  generatedById String     @db.ObjectId    
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String?
+  reportType    ReportType
+  status        ReportStatus
+  generatedBy   User         @relation(fields: [generatedById], references: [id])
+  generatedById String       @db.ObjectId
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
   @@map("reports")
 }
