@@ -12,12 +12,21 @@ import { Readable } from "stream";
 export const createCourse = async (data: {
   name: string;
   description: string;
-  price: number;
+  finalPrice: number;
+  originalPrice: number;
   tags: string[];
   file: string[]; // Array of file paths
   categoryName: string;
 }): Promise<Course> => {
-  const { name, description, price, tags, file, categoryName } = data;
+  const {
+    name,
+    description,
+    finalPrice,
+    tags,
+    file,
+    originalPrice,
+    categoryName,
+  } = data;
 
   try {
     // Check if the course with the same name already exists
@@ -49,9 +58,10 @@ export const createCourse = async (data: {
       data: {
         name,
         description,
-        price,
+        finalPrice,
         tags,
         file, // Store the array of file paths
+        originalPrice,
         categoryId: categoryExists.id, // Use the ID of the found category
       },
     });
