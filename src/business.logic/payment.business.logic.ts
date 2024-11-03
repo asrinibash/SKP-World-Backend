@@ -1,153 +1,202 @@
-import axios from "axios";
+// business.logic/payment.business.logic.ts
+
 import { prismaClient } from "../index";
+import { Order, Purchase, Course, User, OrderStatus } from "@prisma/client";
+import { NotFoundException } from "../errorHandle/NotFoundException";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { ErrorCode } from "../errorHandle/root";
-import { NotFoundException } from "../errorHandle/NotFoundException";
-import { Order, OrderStatus, Course, User } from "@prisma/client";
+import { getCourseById } from "./course.bussiness.logic";
+import axios from "axios";
+const sha256=require('sha256')
+const uniqid=require('uniqid')
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
+// Configuration (should be in environment variables)
+const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID;
+const SALT_KEY = process.env.PHONEPE_SALT_KEY;
+const SALT_INDEX = process.env.PHONEPE_SALT_INDEX;
+const PHONE_PE_HOST_URL = process.env.PHONE_PE_HOST_URL;
+const APP_BE_URL = process.env.APP_BE_URL;
 
-const base = "https://api-m.sandbox.paypal.com";
+interface PaymentInitiateResponse {
+  redirectUrl: string;
+  merchantTransactionId: string;
+  orderId: string;  // Added to track order
+}
 
-// Generate an access token
-const generateAccessToken = async () => {
-  try {
-    const auth = Buffer.from(
-      PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET 
-    ).toString("base64");
+interface PaymentValidationResponse {
+  success: boolean;
+  code: string;
+  message: string;
+  data?: any;
+}
+
+// Initiate Payment
+export const initiatePayment = async (
+  userId: string,
+  courseId: string
+): Promise<PaymentInitiateResponse> => {
+try{
+
+
+    // Get course details
+    const course = await getCourseById(courseId)
+    console.log(`Got the course: ${course}`);
+    
+    if (!course) {
+      throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
+    }
+
+    // Check if user has already purchased the course
+    const existingPurchase = await prismaClient.purchase.findUnique({
+      where: {
+        userId_courseId: {
+          userId: userId,
+          courseId: courseId,
+        },
+      },
+    });
+
+    if (existingPurchase) {
+      throw new BadRequestExpection(
+        "Course already purchased",
+        ErrorCode.COURSE_ALREADY_PURCHASED
+      );
+    }
+
+    const merchantTransactionId = uniqid();
+
+    // Create pending order
+    const order = await prismaClient.order.create({
+      data: {
+        userId,
+        courseId,
+        amount: course.finalPrice,
+        paymentStatus: OrderStatus.PENDING,
+        paymentMethod: "PHONEPE",
+      },
+    });
+
+    // Prepare PhonePe payload
+    const payload = {
+      merchantId: MERCHANT_ID,
+      merchantTransactionId: merchantTransactionId,
+      merchantUserId: userId,
+      amount: course.finalPrice * 100, // Convert to paise
+      redirectUrl: `${APP_BE_URL}/api/payment/validate/${merchantTransactionId}/${order.id}`,
+      redirectMode: "REDIRECT",
+      paymentInstrument: {
+        type: "PAY_PAGE",
+      },
+    };
+
+    // Encode payload
+    const base64EncodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64");
+    
+    // Generate checksum
+    const string = base64EncodedPayload + "/pg/v1/pay" + SALT_KEY;
+    const xVerifyChecksum = `${sha256(string)}###${SALT_INDEX}`;
+
+    // Make PhonePe API call
     const response = await axios.post(
-      `${base}/v1/oauth2/token`,
-      "grant_type=client_credentials",
+      `${PHONE_PE_HOST_URL}/pg/v1/pay`,
+      { request: base64EncodedPayload },
       {
         headers: {
-          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/json",
+          "X-VERIFY": xVerifyChecksum,
+          accept: "application/json",
         },
       }
     );
-    return response.data.access_token;
+
+    return {
+      redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
+      merchantTransactionId,
+      orderId: order.id
+    };
   } catch (error) {
-    console.error("Failed to generate Access Token:", error);
+    console.error("Error in initiatePayment:", error);
     throw error;
   }
 };
 
-// Create PayPal order
-export const createPayPalOrder = async (
-  courseId: string,
+// Validate Payment
+export const validatePayment = async (
+  merchantTransactionId: string,
+  orderId: string,
   userId: string
-): Promise< any > => {
+): Promise<PaymentValidationResponse> => {
   try {
-    const course = await prismaClient.course.findUnique({
-      where: { id: courseId },
+    const statusUrl = `${PHONE_PE_HOST_URL}/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`;
+    const string = `/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}${SALT_KEY}`;
+    const xVerifyChecksum = `${sha256(string)}###${SALT_INDEX}`;
+
+    const response = await axios.get(statusUrl, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-VERIFY": xVerifyChecksum,
+        "X-MERCHANT-ID": merchantTransactionId,
+        accept: "application/json",
+      },
     });
-    if (!course) {
-      throw new NotFoundException(
-        "Course not found",
-        ErrorCode.COURSE_NOT_FOUND
+
+    // Find order
+    const order = await prismaClient.order.findUnique({
+      where: { 
+        id: orderId
+      },
+      include: {
+        course: true
+      }
+    });
+
+    if (!order) {
+      throw new NotFoundException("Order not found", ErrorCode.ORDER_NOT_FOUND);
+    }
+
+    if (order.userId !== userId) {
+      throw new BadRequestExpection(
+        "Unauthorized access to order",
+        ErrorCode.UNAUTHORIZED
       );
     }
 
-    const accessToken = await generateAccessToken();
-    const url = `${base}/v2/checkout/orders`;
-    const payload = {
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          amount: {
-            currency_code: "USD",
-            value: course.price.toString(),
-          },
+    if (response.data.code === "PAYMENT_SUCCESS") {
+      // Update order status
+      await prismaClient.order.update({
+        where: { id: orderId },
+        data: { paymentStatus: OrderStatus.COMPLETED }
+      });
+
+      // Create purchase record
+      await prismaClient.purchase.create({
+        data: {
+          userId: order.userId,
+          courseId: order.courseId!,
         },
-      ],
-    };
+      });
 
-    const response = await axios.post(url, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+      return {
+        success: true,
+        code: "PAYMENT_SUCCESS",
+        message: "Payment successful and course purchased",
+      };
+    } else {
+      // Update order status for failed payment
+      await prismaClient.order.update({
+        where: { id: orderId },
+        data: { paymentStatus: OrderStatus.FAILED }
+      });
 
-    // Create an order in the database
-    await prismaClient.order.create({
-      data: {
-        userId,
-        courseId,
-        paymentStatus: OrderStatus.PENDING,
-        amount: course.price,
-        paymentMethod: "PayPal",
-      },
-    });
-
-   
-    return { id: response.data.id, response:response};
+      return {
+        success: false,
+        code: response.data.code,
+        message: "Payment failed",
+        data: response.data,
+      };
+    }
   } catch (error) {
-    console.error("Failed to create PayPal order:", error);
-    throw new BadRequestExpection(
-      "Failed to create PayPal order",
-      ErrorCode.PAYMENT_FAILED
-    );
+    console.error("Error in validatePayment:", error);
+    throw error;
   }
-};
-
-// Capture PayPal payment
-export const capturePayPalPayment = async (orderId: string): Promise<Order> => {
-  try {
-    const accessToken = await generateAccessToken();
-    const url = `${base}/v2/checkout/orders/${orderId}/capture`;
-
-    await axios.post(
-      url,
-      {},
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    // Update the order status in the database
-    const updatedOrder = await prismaClient.order.update({
-      where: { id: orderId },
-      data: { paymentStatus: OrderStatus.COMPLETED },
-      include: { course: true, user: true },
-    });
-
-    // Create a purchase record
-    await prismaClient.purchase.create({
-      data: {
-        userId: updatedOrder.userId,
-        courseId: updatedOrder.courseId!,
-      },
-    });
-
-    // Update course downloads count
-    await prismaClient.course.update({
-      where: { id: updatedOrder.courseId! },
-      data: { downloads: { increment: 1 } },
-    });
-
-    return updatedOrder;
-  } catch (error) {
-    console.error("Failed to capture PayPal payment:", error);
-    throw new BadRequestExpection(
-      "Failed to capture PayPal payment",
-      ErrorCode.PAYMENT_FAILED
-    );
-  }
-};
-
-// Get order details
-export const getOrderDetails = async (orderId: string): Promise<Order> => {
-  const order = await prismaClient.order.findUnique({
-    where: { id: orderId },
-    include: { course: true, user: true },
-  });
-
-  if (!order) {
-    throw new NotFoundException("Order not found", ErrorCode.ORDER_NOT_FOUND);
-  }
-
-  return order;
 };

@@ -1,38 +1,58 @@
+// controllers/payment.controller.ts
+
 import { Response, NextFunction } from "express";
-import { AuthRequest } from '../types/AuthRequest';  // Import your custom AuthRequest type
-import { createPayPalOrder, capturePayPalPayment, getOrderDetails } from "../business.logic/payment.business.logic";
-import { UnauthorizedException } from "../errorHandle/UnauthorizedException";
-import { ErrorCode } from "../errorHandle/root";
+import { AuthRequest } from "../types/AuthRequest";
+import {
+  initiatePayment,
+  validatePayment,
+} from "../business.logic/payment.business.logic";
 
-export const createPayPalOrderController = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const initiatePaymentController = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    if (!req.user) {
-      throw new UnauthorizedException("User not authenticated", ErrorCode.UNAUTHORIZED);
-    }
+    const userId = req.user?.id;
     const { courseId } = req.body;
-    const userId = req.user.id;
-    const order = await createPayPalOrder(courseId, userId);
-    res.status(200).json(order);
+    
+    if (!userId || !courseId) {
+      return res.status(400).json({
+        message: "courseId is required",
+      });
+    }
+
+    const result = await initiatePayment(userId, courseId);
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 
-export const capturePayPalPaymentController = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const validatePaymentController = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { orderId } = req.params;
-    const capturedOrder = await capturePayPalPayment(orderId);
-    res.status(200).json(capturedOrder);
-  } catch (error) {
-    next(error);
-  }
-};
+    const { merchantTransactionId, orderId } = req.params;
+    const userId = req.user?.id;
 
-export const getOrderDetailsController = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { orderId } = req.params;
-    const order = await getOrderDetails(orderId);
-    res.status(200).json(order);
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const result = await validatePayment(merchantTransactionId, orderId, userId);
+
+    if (result.success) {
+      // Redirect to success page
+      res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
+    } else {
+      // Redirect to failure page
+      res.redirect(`${process.env.FRONTEND_URL}/payment/failure?error=${result.message}`);
+    }
   } catch (error) {
     next(error);
   }
