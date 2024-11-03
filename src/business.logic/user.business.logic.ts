@@ -9,6 +9,7 @@ import { prismaClient } from "..";
 import { UserStatus } from "@prisma/client";
 
 // User Signup
+// User Signup
 export const signupUser = async (data: {
   email: string;
   name: string;
@@ -34,9 +35,6 @@ export const signupUser = async (data: {
       password: hashSync(password, 10),
       image,
       uploaded: false,
-      purchasedCourses: {
-        create: [],
-      },
       downloadHistory: null,
       userGroups: {
         create: [],
@@ -44,6 +42,14 @@ export const signupUser = async (data: {
       orders: {
         create: [],
       },
+      purchases: {
+        create: [],
+      },
+      userType: "USER", // Assuming default user type
+      userStatus: "PENDING",
+      status: "PENDING",
+      isSubscribed: false,
+      subscriptionEnd: null,
     },
   });
 

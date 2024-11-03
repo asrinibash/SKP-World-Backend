@@ -36,12 +36,21 @@ export const createCourseController = async (
     }
 
     // Extract only the expected fields from req.body
-    const { name, description, price, tags, categoryName } = req.body;
+    const { name, description, finalPrice, tags, categoryName, originalPrice } =
+      req.body;
 
     // Check for any unexpected fields
     const unexpectedFields = Object.keys(req.body).filter(
       (key) =>
-        !["name", "description", "price", "tags", "categoryName"].includes(key)
+        ![
+          "name",
+          "description",
+          "finalPrice",
+          "tags",
+
+          "originalPrice",
+          "categoryName",
+        ].includes(key)
     );
 
     if (unexpectedFields.length > 0) {
@@ -64,7 +73,8 @@ export const createCourseController = async (
     const courseData = {
       name,
       description,
-      price: parseFloat(price),
+      finalPrice: parseFloat(finalPrice),
+      originalPrice: parseFloat(originalPrice),
       tags: tags.split(","),
       file: fileUrls,
       categoryName,
