@@ -18,6 +18,7 @@ import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { NotFoundException } from "../errorHandle/NotFoundException";
 import { UnauthorizedException } from "../errorHandle/UnauthorizedException";
 import { ErrorCode } from "../errorHandle/root";
+import { prismaClient } from "..";
 
 // Create Course Controller
 
@@ -258,5 +259,24 @@ export const downloadCoursePDFsController = async (
       return res.status(error.statusCode).json({ message: error.message });
     }
     res.status(500).json({ message: "Error downloading course PDFs" });
+  }
+};
+
+export const viewCourse = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await prismaClient.course.update({
+      where: { id: courseId },
+      data: { view: { increment: 1 } }, // Increment the view count by 1
+    });
+
+    res.status(200).json({ message: "View count updated", course });
+  } catch (error) {
+    next(error);
   }
 };

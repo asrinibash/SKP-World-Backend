@@ -54,11 +54,12 @@ model User {
   subscriptionEnd DateTime?
   orders          Order[]
   userType        UserType
-  userStatus      UserStatus    @default(PENDING) // User's status
-  status          OrderStatus   @default(PENDING) // Order status
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  Report          Report[]
+
+  userStatus UserStatus  @default(PENDING) // User's status
+  status     OrderStatus @default(PENDING) // Order status
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  Report     Report[]
 
   @@map("users")
 }
@@ -116,7 +117,10 @@ model Course {
   tags          String[]
   file          String[]
   imageFiles    String[]
+  view          Int        @default(0)
   downloads     Int        @default(0)
+  size          Int
+  url           String
   category      Category   @relation(fields: [categoryId], references: [id])
   categoryId    String     @db.ObjectId
   purchases     Purchase[] // Updated this line
