@@ -1,8 +1,9 @@
 // src/business.logic/group.bussiness.logic.ts
 import { NotFoundException } from "../errorHandle/NotFoundException";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
-import { Group, User, UserGroup } from ".prisma/client";
+import { Group, User, UserGroup, CourseGroup } from ".prisma/client";
 import { ErrorCode } from "../errorHandle/root";
+import { Course } from "@prisma/client"; // Import the Course model
 
 // Create Group
 import { PrismaClient } from "@prisma/client"; // Adjust the import as necessary
@@ -50,6 +51,7 @@ export const getAllGroups = async (): Promise<Group[]> => {
   return await prismaClient.group.findMany({
     include: {
       userGroups: true,
+      courseGroups: true,
     },
   });
 };
@@ -180,6 +182,91 @@ export const removeUserFromGroup = async (
     });
   } catch (error) {
     console.error("Error in removeUserFromGroup:", error);
+    throw error;
+  }
+};
+
+export const addCourseInGroup = async (
+  categoryName: string,
+  courseName: string,
+  groupId: string
+): Promise<CourseGroup> => {
+  try {
+    // Find the category by name
+    const category = await prismaClient.category.findFirst({
+      where: { name: categoryName },
+    });
+
+    if (!category) {
+      throw new NotFoundException(
+        "Category not found",
+        ErrorCode.CATEGORY_NOT_FOUND
+      );
+    }
+
+    // Find the course within the specified category
+    const course = await prismaClient.course.findFirst({
+      where: { name: courseName, categoryId: category.id },
+    });
+
+    if (!course) {
+      throw new NotFoundException(
+        "Course not found",
+        ErrorCode.COURSE_NOT_FOUND
+      );
+    }
+
+    // Check if the course is already in the group
+    const existingCourseGroup = await prismaClient.courseGroup.findUnique({
+      where: {
+        courseId_groupId: {
+          courseId: course.id,
+          groupId: groupId,
+        },
+      },
+    });
+
+    if (existingCourseGroup) {
+      throw new BadRequestExpection(
+        "Course is already part of this group",
+        ErrorCode.GROUP_NOT_FOUND
+      );
+    }
+
+    // Connect the course to the group
+    const courseGroup = await prismaClient.courseGroup.create({
+      data: {
+        course: { connect: { id: course.id } },
+        group: { connect: { id: groupId } },
+      },
+    });
+
+    return courseGroup;
+  } catch (error) {
+    console.error("Error in addCourseInGroup:", error);
+    throw error;
+  }
+};
+
+export const getCoursesByGroupId = async (
+  groupId: string
+): Promise<Course[]> => {
+  try {
+    // Find all users in the group using groupId
+    const usersInGroup = await prismaClient.courseGroup.findMany({
+      where: {
+        groupId: groupId,
+      },
+      include: {
+        course: true, // Include the related user details
+      },
+    });
+
+    // Extract user details from the userGroup relations
+    const users = usersInGroup.map((courseGroup) => courseGroup.course);
+    return users;
+  } catch (error) {
+    console.error("Error in getUsersByGroupId:", error);
     throw error;
   }
 };

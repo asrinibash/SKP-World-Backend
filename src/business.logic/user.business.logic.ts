@@ -104,16 +104,16 @@ export const updateUser = async (
 };
 
 // Get All Users
-// Get All Users with Orders
+// Function to get all users with their orders and reports
 export const getAllUsers = async (): Promise<User[]> => {
   return await prismaClient.user.findMany({
     include: {
       orders: {
-        // Include orders associated with each user
         include: {
           course: true, // Include course details if needed
         },
       },
+      Report: true, // Include reports associated with each user
     },
   });
 };
@@ -134,7 +134,17 @@ export const getAllUser = async (): Promise<User[]> => {
 
 // Get User by ID
 export const getUserById = async (id: string): Promise<User | null> => {
-  const user = await prismaClient.user.findUnique({ where: { id } });
+  const user = await prismaClient.user.findUnique({
+    where: { id },
+    include: {
+      orders: {
+        include: {
+          course: true, // Include course details if needed
+        },
+      },
+      Report: true, // Include reports associated with each user
+    },
+  });
 
   if (!user) {
     throw new NotFoundException("User not found", ErrorCode.USER_NOT_FOUND);

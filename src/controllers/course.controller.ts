@@ -139,7 +139,6 @@ export const updateCourseController = async (
   }
 };
 
-// Delete Course by ID
 export const deleteCourseByIdController = async (
   req: Request,
   res: Response,
@@ -151,8 +150,12 @@ export const deleteCourseByIdController = async (
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
-    const { id } = req.params;
-    await deleteCourseById(id);
+    const { courseId } = req.params; // Correctly access `courseId` instead of `id`
+    if (!courseId) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+
+    await deleteCourseById(courseId); // Pass the correct `courseId` to the function
     res.status(204).json({ message: "Course deleted successfully" });
   } catch (error) {
     next(error);

@@ -7,8 +7,8 @@ import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { ErrorCode } from "../errorHandle/root";
 import { getCourseById } from "./course.bussiness.logic";
 import axios from "axios";
-const sha256=require('sha256')
-const uniqid=require('uniqid')
+const sha256 = require("sha256");
+const uniqid = require("uniqid");
 
 // Configuration (should be in environment variables)
 const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID;
@@ -20,7 +20,7 @@ const APP_BE_URL = process.env.APP_BE_URL;
 interface PaymentInitiateResponse {
   redirectUrl: string;
   merchantTransactionId: string;
-  orderId: string;  // Added to track order
+  orderId: string; // Added to track order
 }
 
 interface PaymentValidationResponse {
@@ -35,15 +35,16 @@ export const initiatePayment = async (
   userId: string,
   courseId: string
 ): Promise<PaymentInitiateResponse> => {
-try{
-
-
+  try {
     // Get course details
-    const course = await getCourseById(courseId)
+    const course = await getCourseById(courseId);
     console.log(`Got the course: ${course}`);
-    
+
     if (!course) {
-      throw new NotFoundException("Course not found", ErrorCode.COURSE_NOT_FOUND);
+      throw new NotFoundException(
+        "Course not found",
+        ErrorCode.COURSE_NOT_FOUND
+      );
     }
 
     // Check if user has already purchased the course
@@ -90,8 +91,10 @@ try{
     };
 
     // Encode payload
-    const base64EncodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64");
-    
+    const base64EncodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64"
+    );
+
     // Generate checksum
     const string = base64EncodedPayload + "/pg/v1/pay" + SALT_KEY;
     const xVerifyChecksum = `${sha256(string)}###${SALT_INDEX}`;
@@ -112,7 +115,7 @@ try{
     return {
       redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
       merchantTransactionId,
-      orderId: order.id
+      orderId: order.id,
     };
   } catch (error) {
     console.error("Error in initiatePayment:", error);
@@ -142,12 +145,12 @@ export const validatePayment = async (
 
     // Find order
     const order = await prismaClient.order.findUnique({
-      where: { 
-        id: orderId
+      where: {
+        id: orderId,
       },
       include: {
-        course: true
-      }
+        course: true,
+      },
     });
 
     if (!order) {
@@ -165,7 +168,7 @@ export const validatePayment = async (
       // Update order status
       await prismaClient.order.update({
         where: { id: orderId },
-        data: { paymentStatus: OrderStatus.COMPLETED }
+        data: { paymentStatus: OrderStatus.COMPLETED },
       });
 
       // Create purchase record
@@ -185,7 +188,7 @@ export const validatePayment = async (
       // Update order status for failed payment
       await prismaClient.order.update({
         where: { id: orderId },
-        data: { paymentStatus: OrderStatus.FAILED }
+        data: { paymentStatus: OrderStatus.FAILED },
       });
 
       return {

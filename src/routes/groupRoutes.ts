@@ -9,6 +9,8 @@ import {
   addUserToGroupController,
   removeUserFromGroupController,
   getUsersByGroupIdController,
+  addCourseInGroupController,
+  getCoursesByGroupIdController,
 } from "../controllers/group.controller";
 import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 
@@ -25,7 +27,10 @@ router.get("/:id", getGroupByIdController);
 router.put("/:id", adminAuthMiddleware, updateGroupController);
 router.delete("/:id", adminAuthMiddleware, deleteGroupByIdController);
 router.post("/addUser/:groupId/users", addUserToGroupController);
+router.post("/addCourse/:groupId/courses", addCourseInGroupController);
 router.get("/getAllGroupUser/:groupId", getUsersByGroupIdController);
+// Route to fetch courses by category ID
+router.get("/getAllGroupCourse/:groupId", getCoursesByGroupIdController);
 router.delete(
   "/removeUser/:groupId/users/:userId",
   removeUserFromGroupController

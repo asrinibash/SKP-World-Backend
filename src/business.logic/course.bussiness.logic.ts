@@ -121,6 +121,10 @@ export const updateCourse = async (
 
 // Delete Course by ID
 export const deleteCourseById = async (id: string): Promise<void> => {
+  if (!id) {
+    throw new Error("Invalid course ID");
+  }
+
   const course = await prismaClient.course.findUnique({ where: { id } });
 
   if (!course) {
