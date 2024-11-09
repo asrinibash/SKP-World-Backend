@@ -28,17 +28,27 @@ export const addReport = async (data: {
     return report;
   } catch (error) {
     console.error("Error in addReport:", error);
-    throw new BadRequestExpection("Failed to create report", ErrorCode.BAD_REQUEST);
+    throw new BadRequestExpection(
+      "Failed to create report",
+      ErrorCode.BAD_REQUEST
+    );
   }
 };
 
 // Get All Reports
 export const getAllReports = async (): Promise<Report[]> => {
-  return await prismaClient.report.findMany();
+  return await prismaClient.report.findMany({
+    include: {
+      generatedBy: true, // Use 'generatedBy' to include the associated User
+    },
+  });
 };
 
 // Update Report Status
-export const updateReportStatus = async (id: string, status: string): Promise<Report> => {
+export const updateReportStatus = async (
+  id: string,
+  status: string
+): Promise<Report> => {
   const report = await prismaClient.report.findUnique({ where: { id } });
 
   if (!report) {

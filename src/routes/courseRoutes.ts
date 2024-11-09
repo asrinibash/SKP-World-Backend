@@ -10,6 +10,7 @@ import {
   updateCourseTagsController,
   getCourseFileController,
   downloadCoursePDFsController,
+  viewCourse,
 } from "../controllers/course.controller";
 import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 import { userAuthMiddleware } from "../middleware/userAuthMiddleware";
@@ -57,4 +58,5 @@ router.patch(
   updateCourseTagsController
 );
 
+router.post("/view/:courseId", viewCourse);
 export default router;

@@ -9,6 +9,8 @@ import {
   addUserToGroup,
   removeUserFromGroup,
   getUsersByGroupId,
+  addCourseInGroup,
+  getCoursesByGroupId,
 } from "../business.logic/group.bussiness.logic";
 
 export const createGroupController = async (
@@ -151,5 +153,42 @@ export const removeUserFromGroupController = async (
     res.status(204).json({ message: "User removed from group successfully" });
   } catch (error) {
     next(error);
+  }
+};
+
+export const addCourseInGroupController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { categoryName, courseName } = req.body; // Get category and course names from the request body
+    const { groupId } = req.params; // Group ID from route parameters
+
+    const courseGroup = await addCourseInGroup(
+      categoryName,
+      courseName,
+      groupId
+    );
+    res.status(201).json(courseGroup);
+  } catch (error: any) {
+    if (error.name === "CourseAlreadyInGroup") {
+      return res.status(409).json({ message: error.message });
+    }
+    next(error); // Pass other errors to the error handler middleware
+  }
+};
+
+export const getCoursesByGroupIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { groupId } = req.params; // Get groupId from request parameters
+    const courses = await getCoursesByGroupId(groupId); // Fetch users for the group
+    res.status(200).json(courses); // Return the list of users
+  } catch (error) {
+    next(error); // Handle errors in middleware
   }
 };

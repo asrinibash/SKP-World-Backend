@@ -54,11 +54,12 @@ model User {
   subscriptionEnd DateTime?
   orders          Order[]
   userType        UserType
-  userStatus      UserStatus    @default(PENDING) // User's status
-  status          OrderStatus   @default(PENDING) // Order status
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  Report          Report[]
+
+  userStatus UserStatus  @default(PENDING) // User's status
+  status     OrderStatus @default(PENDING) // Order status
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  Report     Report[]
 
   @@map("users")
 }
@@ -107,7 +108,7 @@ model Subscription {
 }
 
 model Course {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   description   String
   originalPrice Float
@@ -116,13 +117,17 @@ model Course {
   tags          String[]
   file          String[]
   imageFiles    String[]
-  downloads     Int        @default(0)
-  category      Category   @relation(fields: [categoryId], references: [id])
-  categoryId    String     @db.ObjectId
-  purchases     Purchase[] // Updated this line
+  view          Int           @default(0)
+  downloads     Int           @default(0)
+  size          Int? // Make size nullable with "Int?"
+  url           String?
+  category      Category      @relation(fields: [categoryId], references: [id])
+  categoryId    String        @db.ObjectId
+  purchases     Purchase[]
   orders        Order[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  courseGroups  CourseGroup[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@map("courses")
 }
@@ -143,14 +148,15 @@ model Order {
 }
 
 model Group {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
-  name        String      @unique
-  description String
-  userGroups  UserGroup[]
-  createdBy   Admin       @relation(fields: [createdById], references: [id])
-  createdById String      @db.ObjectId
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String        @unique
+  description  String
+  userGroups   UserGroup[]
+  courseGroups CourseGroup[]
+  createdBy    Admin         @relation(fields: [createdById], references: [id])
+  createdById  String        @db.ObjectId
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@map("groups")
 }
@@ -191,4 +197,24 @@ model Report {
   updatedAt     DateTime     @updatedAt
 
   @@map("reports")
+}
+
+model Contact {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String
+  mobile    String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model CourseGroup {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @db.ObjectId
+  group    Group  @relation(fields: [groupId], references: [id])
+  groupId  String @db.ObjectId
+
+  @@unique([courseId, groupId]) // Ensure a course can only be in a group once
+  @@map("coursegroups") // Custom table name in the database
 }

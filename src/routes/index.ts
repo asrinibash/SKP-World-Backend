@@ -9,6 +9,7 @@ import groupRoutes from "./groupRoutes";
 import orderRoutes from "./orderRoutes";
 import paymentRoutes from "./paymentRoutes";
 import reportRoutes from "./reportRoutes";
+import contactRoutes from "./contactRoutes";
 
 // * Admin Routes
 rootRouter.use("/admin", adminRoutes);
@@ -33,4 +34,7 @@ rootRouter.use("/group", groupRoutes);
 
 //*Report Routes
 rootRouter.use("/report", reportRoutes);
+
+//*Contact Routes
+rootRouter.use("/contact", contactRoutes);
 export default rootRouter;
