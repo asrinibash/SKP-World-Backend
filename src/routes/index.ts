@@ -10,6 +10,7 @@ import orderRoutes from "./orderRoutes";
 import paymentRoutes from "./paymentRoutes";
 import reportRoutes from "./reportRoutes";
 import contactRoutes from "./contactRoutes";
+import commentRoutes from "./commentRoutes";
 
 // * Admin Routes
 rootRouter.use("/admin", adminRoutes);
@@ -37,4 +38,7 @@ rootRouter.use("/report", reportRoutes);
 
 //*Contact Routes
 rootRouter.use("/contact", contactRoutes);
+
+//*Comment Routes
+rootRouter.use("/comment", commentRoutes);
 export default rootRouter;

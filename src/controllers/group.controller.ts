@@ -37,7 +37,6 @@ export const createGroupController = async (
   }
 };
 
-// Get All Groups
 export const getAllGroupsController = async (
   req: Request,
   res: Response,

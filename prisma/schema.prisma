@@ -53,13 +53,14 @@ model User {
   isSubscribed    Boolean       @default(false)
   subscriptionEnd DateTime?
   orders          Order[]
+  groups          Group[]
   userType        UserType
-
-  userStatus UserStatus  @default(PENDING) // User's status
-  status     OrderStatus @default(PENDING) // Order status
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  Report     Report[]
+  comments        Comment[] // Relation field for comments
+  userStatus      UserStatus    @default(PENDING) // User's status
+  status          OrderStatus   @default(PENDING) // Order status
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  Report          Report[]
 
   @@map("users")
 }
@@ -125,6 +126,7 @@ model Course {
   categoryId    String        @db.ObjectId
   purchases     Purchase[]
   orders        Order[]
+  comments      Comment[] // Relation field for comments
   courseGroups  CourseGroup[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -153,6 +155,8 @@ model Group {
   description  String
   userGroups   UserGroup[]
   courseGroups CourseGroup[]
+  user         User?         @relation(fields: [userId], references: [id])
+  userId       String?       @db.ObjectId
   createdBy    Admin         @relation(fields: [createdById], references: [id])
   createdById  String        @db.ObjectId
   createdAt    DateTime      @default(now())
@@ -217,4 +221,23 @@ model CourseGroup {
 
   @@unique([courseId, groupId]) // Ensure a course can only be in a group once
   @@map("coursegroups") // Custom table name in the database
+}
+
+model Comment {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  content  String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @db.ObjectId
+
+  // Self-relation fields for comment replies
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentCommentId String?   @db.ObjectId
+  replies         Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
 }

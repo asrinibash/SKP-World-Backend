@@ -46,7 +46,6 @@ export const createGroup = async (data: {
   }
 };
 
-// Get All Groups
 export const getAllGroups = async (): Promise<Group[]> => {
   return await prismaClient.group.findMany({
     include: {
