@@ -18,7 +18,7 @@ import {
 } from "../controllers/user.controller";
 import { updateUserStatusById } from "../business.logic/user.business.logic";
 
-const router = express.Router();  
+const router = express.Router();
 const upload = multer(); // Configure Multer as needed
 
 router.post("/signup", signupUserController);

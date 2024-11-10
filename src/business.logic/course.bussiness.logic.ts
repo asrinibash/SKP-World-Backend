@@ -79,6 +79,7 @@ export const getAllCourses = async (): Promise<Course[]> => {
       category: true,
       purchases: true, // Ensure this relation is correct
       orders: true,
+      comments: true,
     },
   });
 };
@@ -87,7 +88,12 @@ export const getAllCourses = async (): Promise<Course[]> => {
 export const getCourseById = async (id: string): Promise<Course | null> => {
   const course = await prismaClient.course.findUnique({
     where: { id },
-    include: { category: true },
+    include: {
+      category: true,
+      purchases: true, // Ensure this relation is correct
+      orders: true,
+      comments: true,
+    },
   });
 
   if (!course) {

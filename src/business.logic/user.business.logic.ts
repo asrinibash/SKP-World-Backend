@@ -103,17 +103,21 @@ export const updateUser = async (
   return user;
 };
 
-// Get All Users
-// Function to get all users with their orders and reports
 export const getAllUsers = async (): Promise<User[]> => {
   return await prismaClient.user.findMany({
     include: {
       orders: {
         include: {
-          course: true, // Include course details if needed
+          course: true, // Include course details if necessary
         },
       },
       Report: true, // Include reports associated with each user
+      userGroups: {
+        include: {
+          group: true, // Include related groups through the userGroups relation
+        },
+      },
+      courseGroups: true,
     },
   });
 };

@@ -45,7 +45,7 @@ export const loginUserController = async (
   }
 };
 
-// Controller to handle the get all users request
+// Controller to handle the response for fetching all users
 export const getAllUsersController = async (
   req: Request,
   res: Response,
@@ -53,11 +53,12 @@ export const getAllUsersController = async (
 ) => {
   try {
     const users = await getAllUsers();
-    res.status(200).json(users); // Send users with orders and reports in the response
+    res.status(200).json(users);
   } catch (error) {
-    next(error); // Pass errors to the error handler middleware
+    next(error);
   }
 };
+
 export const getAllUsersControllers = async (
   req: Request,
   res: Response,
