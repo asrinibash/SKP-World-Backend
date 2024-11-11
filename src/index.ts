@@ -5,6 +5,7 @@ const multer = require("multer"); // Import Multer
 const { errorMiddleware } = require("./middleware/errorMiddleware");
 import { PORT } from "./secret";
 import rootRouter from "./routes";
+require('dotenv').config();
 
 const app = express();
 

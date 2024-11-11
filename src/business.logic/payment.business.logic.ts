@@ -1,7 +1,5 @@
-// business.logic/payment.business.logic.ts
-
 import { prismaClient } from "../index";
-import { Order, Purchase, Course, User, OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 import { NotFoundException } from "../errorHandle/NotFoundException";
 import { BadRequestExpection } from "../errorHandle/BadRequestExpection";
 import { ErrorCode } from "../errorHandle/root";
@@ -35,6 +33,8 @@ export const initiatePayment = async (
   userId: string,
   courseId: string
 ): Promise<PaymentInitiateResponse> => {
+  console.log(MERCHANT_ID,SALT_KEY,SALT_INDEX,APP_BE_URL);
+  
   try {
     // Get course details
     const course = await getCourseById(courseId);
@@ -76,7 +76,8 @@ export const initiatePayment = async (
         paymentMethod: "PHONEPE",
       },
     });
-
+    console.log("order",order);
+    
     // Prepare PhonePe payload
     const payload = {
       merchantId: MERCHANT_ID,
@@ -89,16 +90,19 @@ export const initiatePayment = async (
         type: "PAY_PAGE",
       },
     };
-
+    console.log("payload:",payload);
+    
     // Encode payload
     const base64EncodedPayload = Buffer.from(JSON.stringify(payload)).toString(
       "base64"
     );
 
+    console.log("base64",base64EncodedPayload);
+    
     // Generate checksum
     const string = base64EncodedPayload + "/pg/v1/pay" + SALT_KEY;
     const xVerifyChecksum = `${sha256(string)}###${SALT_INDEX}`;
-
+    
     // Make PhonePe API call
     const response = await axios.post(
       `${PHONE_PE_HOST_URL}/pg/v1/pay`,

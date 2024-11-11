@@ -13,15 +13,15 @@ export const initiatePaymentController = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?.id;
+    const { userId } = req.body;
     const { courseId } = req.body;
-    
+
     if (!userId || !courseId) {
       return res.status(400).json({
         message: "courseId is required",
       });
     }
-
+ 
     const result = await initiatePayment(userId, courseId);
     res.status(200).json(result);
   } catch (error) {
@@ -44,14 +44,20 @@ export const validatePaymentController = async (
       });
     }
 
-    const result = await validatePayment(merchantTransactionId, orderId, userId);
+    const result = await validatePayment(
+      merchantTransactionId,
+      orderId,
+      userId
+    );
 
     if (result.success) {
       // Redirect to success page
       res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
     } else {
       // Redirect to failure page
-      res.redirect(`${process.env.FRONTEND_URL}/payment/failure?error=${result.message}`);
+      res.redirect(
+        `${process.env.FRONTEND_URL}/payment/failure?error=${result.message}`
+      );
     }
   } catch (error) {
     next(error);
