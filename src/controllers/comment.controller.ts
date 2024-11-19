@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {
-  createComment,
+  createChildComment,
+  createParentComment,
   deleteAllComments,
   deleteCommentById,
   editComment,
@@ -8,15 +9,30 @@ import {
   getCommentById,
 } from "../business.logic/comment.business.logic";
 
-// Controller for creating a comment or reply
-export const createCommentController = async (
+// Controller for creating a parent comment
+export const createParentCommentController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, courseId, content } = req.body;
+    const comment = await createParentComment({ userId, courseId, content });
+    res.status(201).json(comment);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Controller for creating a child comment
+export const createChildCommentController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { userId, courseId, content, parentCommentId } = req.body;
-    const comment = await createComment({
+    const comment = await createChildComment({
       userId,
       courseId,
       content,

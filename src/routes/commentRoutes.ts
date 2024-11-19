@@ -1,7 +1,8 @@
 import express from "express";
 
 import {
-  createCommentController,
+  createChildCommentController,
+  createParentCommentController,
   deleteAllCommentsController,
   deleteCommentByIdController,
   editCommentController,
@@ -12,7 +13,9 @@ import {
 const router = express.Router();
 
 // Define the POST route for the contact form submission
-router.post("/", createCommentController);
+router.post("/parent", createParentCommentController); // For creating parent comments
+router.post("/child", createChildCommentController); // For creating replies
+
 router.get("/", getAllCommentsController);
 router.get("/:id", getCommentByIdController);
 router.put("/:id", editCommentController);

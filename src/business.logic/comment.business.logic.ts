@@ -2,11 +2,51 @@ import { prismaClient } from "..";
 import { NotFoundException } from "../errorHandle/NotFoundException";
 import { ErrorCode } from "../errorHandle/root";
 
-export const createComment = async (data: {
+export const createParentComment = async (data: {
   userId: string;
   courseId: string;
   content: string;
-  parentCommentId?: string; // Optional for replies
+}): Promise<Comment> => {
+  const { userId, courseId, content } = data;
+
+  try {
+    // Check if user and course exist
+    const user = await prismaClient.user.findUnique({ where: { id: userId } });
+    const course = await prismaClient.course.findUnique({
+      where: { id: courseId },
+    });
+
+    if (!user) {
+      throw new NotFoundException("User not found", ErrorCode.USER_NOT_FOUND);
+    }
+    if (!course) {
+      throw new NotFoundException(
+        "Course not found",
+        ErrorCode.COURSE_NOT_FOUND
+      );
+    }
+
+    // Create the parent comment (no parentCommentId)
+    const comment = await prismaClient.comment.create({
+      data: {
+        userId,
+        courseId,
+        content,
+      },
+    });
+
+    return comment;
+  } catch (error) {
+    console.error("Error in createParentComment:", error);
+    throw error;
+  }
+};
+
+export const createChildComment = async (data: {
+  userId: string;
+  courseId: string;
+  content: string;
+  parentCommentId: string; // Required for replies
 }): Promise<Comment> => {
   const { userId, courseId, content, parentCommentId } = data;
 
@@ -27,20 +67,18 @@ export const createComment = async (data: {
       );
     }
 
-    // If it's a reply, verify the parent comment exists
-    if (parentCommentId) {
-      const parentComment = await prismaClient.comment.findUnique({
-        where: { id: parentCommentId },
-      });
-      if (!parentComment) {
-        throw new NotFoundException(
-          "Parent comment not found",
-          ErrorCode.COMMENT_NOT_FOUND
-        );
-      }
+    // Verify the parent comment exists
+    const parentComment = await prismaClient.comment.findUnique({
+      where: { id: parentCommentId },
+    });
+    if (!parentComment) {
+      throw new NotFoundException(
+        "Parent comment not found",
+        ErrorCode.COMMENT_NOT_FOUND
+      );
     }
 
-    // Create the comment (or reply)
+    // Create the child comment (reply)
     const comment = await prismaClient.comment.create({
       data: {
         userId,
@@ -52,7 +90,7 @@ export const createComment = async (data: {
 
     return comment;
   } catch (error) {
-    console.error("Error in createComment:", error);
+    console.error("Error in createChildComment:", error);
     throw error;
   }
 };

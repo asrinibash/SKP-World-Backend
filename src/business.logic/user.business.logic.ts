@@ -117,7 +117,6 @@ export const getAllUsers = async (): Promise<User[]> => {
           group: true, // Include related groups through the userGroups relation
         },
       },
-      courseGroups: true,
     },
   });
 };
